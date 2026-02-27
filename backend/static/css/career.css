@@ -1,0 +1,395 @@
+/* ============================================
+   CAREER GUIDANCE RESULTS PAGE STYLES
+   ============================================ */
+
+.results-page {
+    min-height: 100vh;
+    padding: var(--spacing-xl) 0;
+    background: linear-gradient(135deg, #f5f7fb 0%, #e0e7ff 100%);
+}
+
+.results-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    animation: fadeIn 0.6s ease-out;
+}
+
+.results-header h1 {
+    font-size: 42px;
+    font-weight: 800;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-xs);
+}
+
+.results-header p {
+    color: var(--gray-600);
+    font-size: 18px;
+}
+
+.results-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.career-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.career-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+.career-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+}
+
+.career-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+}
+
+.career-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+}
+
+.career-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-xs);
+}
+
+.match-badge {
+    background: var(--gradient-primary);
+    color: var(--white);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.match-percentage {
+    margin: var(--spacing-sm) 0;
+}
+
+.match-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-xs);
+}
+
+.match-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.match-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 1s ease-out;
+    animation: progressAnimation 1s ease-out;
+}
+
+.career-details {
+    margin-top: var(--spacing-md);
+}
+
+.detail-section {
+    margin-bottom: var(--spacing-md);
+}
+
+.detail-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin-bottom: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.detail-content {
+    color: var(--gray-700);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.skill-badge {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.education-section {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    animation: slideUp 0.8s ease-out;
+}
+
+.section-heading {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.education-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.education-card {
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    border-left: 4px solid var(--primary-blue);
+    transition: all var(--transition-base);
+}
+
+.education-card:hover {
+    background: var(--light-blue);
+    transform: translateX(4px);
+}
+
+.education-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-xs);
+}
+
+.education-card p {
+    color: var(--gray-600);
+    font-size: 14px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.course-list {
+    list-style: none;
+    padding: 0;
+}
+
+.course-list li {
+    padding: var(--spacing-xs) 0;
+    color: var(--gray-700);
+    font-size: 14px;
+    padding-left: 24px;
+    position: relative;
+}
+
+.course-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.roadmap {
+    margin-top: var(--spacing-lg);
+}
+
+.roadmap-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.roadmap-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.roadmap-step::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--gray-200);
+    z-index: -1;
+}
+
+.roadmap-step:last-child::after {
+    display: none;
+}
+
+.roadmap-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 auto var(--spacing-sm);
+    box-shadow: var(--shadow-md);
+}
+
+.roadmap-step h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-xs);
+}
+
+.roadmap-step p {
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+.growth-section {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-xl);
+    animation: slideUp 1s ease-out;
+}
+
+.growth-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.timeline-item {
+    display: flex;
+    gap: var(--spacing-md);
+    position: relative;
+    padding-left: var(--spacing-lg);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gradient-primary);
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary-blue);
+    border: 3px solid var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.timeline-content {
+    flex: 1;
+    background: var(--gray-50);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.timeline-content h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-xs);
+}
+
+.timeline-content p {
+    color: var(--gray-600);
+    font-size: 14px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.salary-range {
+    display: inline-block;
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: var(--spacing-xs);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    min-width: 180px;
+    padding: 10px 22px;
+    font-size: 15px;
+}
+
+@media (max-width: 968px) {
+    .career-cards { grid-template-columns: 1fr; }
+    .roadmap-steps { flex-direction: column; }
+    .roadmap-step::after { display: none; }
+    .results-header h1 { font-size: 32px; }
+}
+
+@media (max-width: 480px) {
+    .education-grid { grid-template-columns: 1fr; }
+    .action-buttons { flex-direction: column; }
+    .btn-action { width: 100%; }
+}

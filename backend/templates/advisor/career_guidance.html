@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Career Guidance Results - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/career.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="results-header">
+        <h1>{{ ui.results_title }}</h1>
+        <p>{{ ui.results_subtitle }}</p>
+    </div>
+
+    {% if ai_error %}
+    <div class="results-container" style="margin-bottom: var(--spacing-lg);">
+        <div class="card" style="border-left: 4px solid #ef4444;">
+            <div style="font-weight: 700; margin-bottom: var(--spacing-xs);">{{ ui.ai_unavailable_title }}</div>
+            <div style="color: var(--gray-600); font-size: 14px;">
+                {{ ui.ai_unavailable_subtitle }} (Details: {{ ai_error }})
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="results-container">
+        <div class="career-cards">
+            {% for career in career_recommendations %}
+            <div class="career-card">
+                <div class="career-header">
+                    <div>
+                        <h3 class="career-title">{{ career.title }}</h3>
+                    </div>
+                    <span class="match-badge">{{ career.match_percentage }}% Match</span>
+                </div>
+                
+                <div class="match-percentage">
+                    <div class="match-label">
+                        <span>{{ ui.match_score }}</span>
+                        <span>{{ career.match_percentage }}%</span>
+                    </div>
+                    <div class="match-bar">
+                        <div class="match-fill" style="width: {{ career.match_percentage }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="career-details">
+                    <div class="detail-section">
+                        <div class="detail-title">
+                            <span>🎯</span>
+                            <span>{{ ui.why_suits }}</span>
+                        </div>
+                        <div class="detail-content">{{ career.why_suits }}</div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">
+                            <span>💼</span>
+                            <span>{{ ui.required_skills }}</span>
+                        </div>
+                        <div class="skills-list">
+                            {% for skill in career.required_skills %}
+                            <span class="skill-badge">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">
+                            <span>📚</span>
+                            <span>{{ ui.suggested_learning_path }}</span>
+                        </div>
+                        <div class="detail-content">{{ career.learning_path }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="education-section">
+            <h2 class="section-heading">{{ ui.education_learning_path }}</h2>
+            
+            <div class="education-grid">
+                <div class="education-card">
+                    <h3>{{ ui.recommended_degrees }}</h3>
+                    <p>{{ ui.formal_paths }}</p>
+                    <ul class="course-list">
+                        {% for degree in education_path.degrees %}
+                        <li>{{ degree }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="education-card">
+                    <h3>{{ ui.online_certifications }}</h3>
+                    <p>{{ ui.boost_skills }}</p>
+                    <ul class="course-list">
+                        {% for cert in education_path.certifications %}
+                        <li>{{ cert }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="education-card">
+                    <h3>{{ ui.skill_development }}</h3>
+                    <p>{{ ui.focus_areas }}</p>
+                    <ul class="course-list">
+                        {% for skill in education_path.skill_development %}
+                        <li>{{ skill }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="roadmap">
+                <h3 style="text-align: center; font-size: 24px; font-weight: 700; color: var(--gray-800); margin-bottom: var(--spacing-md);">
+                    {{ ui.skill_roadmap }}
+                </h3>
+                <div class="roadmap-steps">
+                    <div class="roadmap-step">
+                        <div class="roadmap-icon">1</div>
+                        <h4>{{ ui.roadmap_beginner }}</h4>
+                        <p>{{ ui.roadmap_beginner_desc }}</p>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="roadmap-icon">2</div>
+                        <h4>{{ ui.roadmap_intermediate }}</h4>
+                        <p>{{ ui.roadmap_intermediate_desc }}</p>
+                    </div>
+                    <div class="roadmap-step">
+                        <div class="roadmap-icon">3</div>
+                        <h4>{{ ui.roadmap_advanced }}</h4>
+                        <p>{{ ui.roadmap_advanced_desc }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="growth-section">
+            <h2 class="section-heading">{{ ui.growth_timeline }}</h2>
+            
+            <div class="growth-timeline">
+                {% for item in growth_timeline %}
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>{{ item.level }}</h4>
+                        <p>{{ item.role }}</p>
+                        <p>{{ item.description }}</p>
+                        <span class="salary-range">{{ item.salary }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary btn-action" onclick="downloadReport()">
+                {{ ui.download_report }}
+            </button>
+            <a href="{% url 'profile_analysis' %}" class="btn btn-secondary btn-action">
+                {{ ui.explore_another }}
+            </a>
+            <a href="{% url 'profile_analysis' %}" class="btn btn-ghost btn-action">
+                {{ ui.update_profile }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.addEventListener('load', function() {
+        const progressBars = document.querySelectorAll('.match-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0';
+            setTimeout(() => { bar.style.width = width; }, 100);
+        });
+    });
+    
+    function downloadReport() {
+        alert('{{ ui.download_soon|escapejs }}');
+    }
+</script>
+{% endblock %}

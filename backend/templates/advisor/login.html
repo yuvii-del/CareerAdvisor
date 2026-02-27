@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Career & Educational Advisor Platform{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <!-- Left: Login Form -->
+    <div class="login-left">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>{{ ui.login_title }}</h1>
+            </div>
+            
+            <form class="login-form" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="lang-toggle">
+                    <a href="{% url 'login' %}?lang=en" class="lang-pill {% if ui_lang == 'en' %}active{% endif %}">EN</a>
+                    <a href="{% url 'login' %}?lang=ta" class="lang-pill {% if ui_lang == 'ta' %}active{% endif %}">தமிழ்</a>
+                </div>
+                <input type="hidden" name="ui_lang" value="{{ ui_lang }}">
+                <div class="form-group">
+                    <label class="form-label" for="username">{{ ui.email_or_username }}</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="{{ ui.enter_email_or_username }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">{{ ui.password }}</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="{{ ui.enter_password }}" required>
+                </div>
+                <button type="submit" name="action" value="login" class="btn btn-primary btn-login">{{ ui.login }}</button>
+                <button type="submit" name="action" value="guest" class="btn btn-guest">{{ ui.continue_guest }}</button>
+            </form>
+            
+            <div class="login-links">
+                <a href="#">{{ ui.forgot_password }}</a>
+                <span class="divider">|</span>
+                <a href="#">{{ ui.create_account }}</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right: Hero Text -->
+    <div class="login-right">
+        <div class="login-hero-bg"></div>
+        <div class="login-hero-text">
+            <h2>{{ ui.hero_title }}</h2>
+            <p>{{ ui.hero_subtitle }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
