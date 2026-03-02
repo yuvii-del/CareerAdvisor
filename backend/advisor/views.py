@@ -6,7 +6,7 @@ AI-ready: context variables prepared for future API integration.
 import json
 import os
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 from .i18n import normalize_lang, get_ui_strings, get_lang_from_request
@@ -32,8 +32,8 @@ def profile_analysis_view(request):
     return render(request, 'advisor/profile_analysis.html')
 
 
-def career_guidance_view(request):
-    """Career guidance results - AI-ready placeholder data (Gemini optional)."""
+def build_career_guidance_context(request):
+    """Builds the shared context used by the career guidance HTML + PDF views."""
     ui_lang = get_lang_from_request(request)
     ui = get_ui_strings(ui_lang)
 
@@ -114,56 +114,64 @@ def career_guidance_view(request):
     else:
         career_recommendations = [
             {
-                'title': 'Software Engineer',
-                'match_percentage': 92,
-                'why_suits': 'Your strong analytical thinking, programming interest, and logical approach align perfectly with software engineering. Your problem-solving skills and technical aptitude make you an ideal candidate for this field.',
-                'required_skills': ['Programming', 'Problem Solving', 'Logical Thinking', 'Teamwork', 'Communication'],
-                'learning_path': 'Start with fundamentals: Data Structures & Algorithms → Web Development → Specialize in Full-Stack or AI/ML → Build projects → Apply for internships',
+                "title": "Software Engineer",
+                "match_percentage": 92,
+                "why_suits": "Your strong analytical thinking, programming interest, and logical approach align perfectly with software engineering. Your problem-solving skills and technical aptitude make you an ideal candidate for this field.",
+                "required_skills": ["Programming", "Problem Solving", "Logical Thinking", "Teamwork", "Communication"],
+                "learning_path": "Start with fundamentals: Data Structures & Algorithms → Web Development → Specialize in Full-Stack or AI/ML → Build projects → Apply for internships",
             },
             {
-                'title': 'Data Scientist',
-                'match_percentage': 85,
-                'why_suits': 'Your interest in AI & Machine Learning, combined with strong analytical skills and mathematical background, positions you well for a career in data science.',
-                'required_skills': ['Statistics', 'Python', 'Machine Learning', 'Data Analysis', 'Visualization'],
-                'learning_path': 'Statistics & Probability → Python Programming → Data Analysis → Machine Learning → Deep Learning → Real-world Projects → Kaggle Competitions',
+                "title": "Data Scientist",
+                "match_percentage": 85,
+                "why_suits": "Your interest in AI & Machine Learning, combined with strong analytical skills and mathematical background, positions you well for a career in data science.",
+                "required_skills": ["Statistics", "Python", "Machine Learning", "Data Analysis", "Visualization"],
+                "learning_path": "Statistics & Probability → Python Programming → Data Analysis → Machine Learning → Deep Learning → Real-world Projects → Kaggle Competitions",
             },
             {
-                'title': 'Product Manager',
-                'match_percentage': 78,
-                'why_suits': 'Your leadership skills, communication abilities, and creative thinking make you well-suited for product management, where you\'ll bridge technical and business worlds.',
-                'required_skills': ['Leadership', 'Communication', 'Strategic Thinking', 'User Research', 'Analytics'],
-                'learning_path': 'Business Fundamentals → Product Management Courses → User Experience Design → Agile/Scrum → Build a Product Portfolio → Internships → Full-time Roles',
+                "title": "Product Manager",
+                "match_percentage": 78,
+                "why_suits": "Your leadership skills, communication abilities, and creative thinking make you well-suited for product management, where you'll bridge technical and business worlds.",
+                "required_skills": ["Leadership", "Communication", "Strategic Thinking", "User Research", "Analytics"],
+                "learning_path": "Business Fundamentals → Product Management Courses → User Experience Design → Agile/Scrum → Build a Product Portfolio → Internships → Full-time Roles",
             },
         ]
 
         education_path = {
-            'degrees': [
-                'B.Tech in Computer Science',
-                'B.Tech in Information Technology',
-                'B.Sc in Data Science',
-                'Integrated M.Tech Programs',
+            "degrees": [
+                "B.Tech in Computer Science",
+                "B.Tech in Information Technology",
+                "B.Sc in Data Science",
+                "Integrated M.Tech Programs",
             ],
-            'certifications': [
-                'Full-Stack Web Development',
-                'Machine Learning Specialization',
-                'Data Structures & Algorithms',
-                'Cloud Computing (AWS/Azure)',
+            "certifications": [
+                "Full-Stack Web Development",
+                "Machine Learning Specialization",
+                "Data Structures & Algorithms",
+                "Cloud Computing (AWS/Azure)",
             ],
-            'skill_development': [
-                'Programming Languages (Python, JavaScript)',
-                'Version Control (Git)',
-                'Database Management',
-                'Software Development Lifecycle',
+            "skill_development": [
+                "Programming Languages (Python, JavaScript)",
+                "Version Control (Git)",
+                "Database Management",
+                "Software Development Lifecycle",
             ],
         }
         growth_timeline = [
-            {'level': 'Entry Level (0-2 years)','role': 'Junior Software Engineer / Associate Developer', 'description': 'Focus on learning, building projects, and understanding industry practices.', 'salary': '₹4-8 LPA'},
-            {'level': 'Mid Level (2-5 years)','role': 'Software Engineer / Senior Developer', 'description': 'Take ownership of features, mentor juniors, and specialize in a domain.', 'salary': '₹8-15 LPA'},
-            {'level': 'Senior Level (5-10 years)', 'role': 'Senior Software Engineer / Tech Lead', 'description': 'Lead teams, architect solutions, and drive technical decisions.', 'salary': '₹15-30 LPA'},
-            {'level': 'Expert Level (10+ years)', 'role': 'Principal Engineer / Engineering Manager / CTO', 'description': 'Shape organizational strategy, innovate, and build scalable systems.', 'salary': '₹30+ LPA'},
+            {"level": "Entry Level (0-2 years)", "role": "Junior Software Engineer / Associate Developer", "description": "Focus on learning, building projects, and understanding industry practices.", "salary": "₹4-8 LPA"},
+            {"level": "Mid Level (2-5 years)", "role": "Software Engineer / Senior Developer", "description": "Take ownership of features, mentor juniors, and specialize in a domain.", "salary": "₹8-15 LPA"},
+            {"level": "Senior Level (5-10 years)", "role": "Senior Software Engineer / Tech Lead", "description": "Lead teams, architect solutions, and drive technical decisions.", "salary": "₹15-30 LPA"},
+            {"level": "Expert Level (10+ years)", "role": "Principal Engineer / Engineering Manager / CTO", "description": "Shape organizational strategy, innovate, and build scalable systems.", "salary": "₹30+ LPA"},
         ]
 
     ai_error = None
+
+    # Determine which sub-page we are on (work vs education)
+    resolver_match = getattr(request, "resolver_match", None)
+    if resolver_match and resolver_match.url_name == "career_guidance_education":
+        page_type = "education"
+    else:
+        # Default to work view (also used for original 'career_guidance' path)
+        page_type = "work"
 
     # --- Gemini integration (server-side) ---
     # IMPORTANT: Do NOT hardcode keys. Set GEMINI_API_KEY in your environment.
@@ -231,16 +239,170 @@ def career_guidance_view(request):
         except Exception as e:
             ai_error = str(e)
 
-    context = {
-        'career_recommendations': career_recommendations,
-        'education_path': education_path,
-        'growth_timeline': growth_timeline,
-        'ai_error': ai_error,
-        'ui': ui,
-        'ui_lang': ui_lang,
+    return {
+        "career_recommendations": career_recommendations,
+        "education_path": education_path,
+        "growth_timeline": growth_timeline,
+        "ai_error": ai_error,
+        "ui": ui,
+        "ui_lang": ui_lang,
+        "page_type": page_type,
     }
 
-    return render(request, 'advisor/career_guidance.html', context)
+
+def career_guidance_view(request):
+    """Career guidance results - AI-ready placeholder data (Gemini optional)."""
+    context = build_career_guidance_context(request)
+    return render(request, "advisor/career_guidance.html", context)
+
+
+def career_guidance_pdf_view(request):
+    """Generate a PDF download of the current career guidance results."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    context = build_career_guidance_context(request)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="career_guidance_report.pdf"'
+
+    pdf = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    # Basic text settings
+    left_margin = 40
+    right_margin = 40
+    max_width = width - left_margin - right_margin
+    font_name = "Helvetica"
+    font_size = 11
+    line_height = 14
+
+    pdf.setFont(font_name, font_size)
+
+    y = height - 50
+
+    def write_line(text="", leading=line_height):
+        """Write a line of text with simple word-wrapping within page margins."""
+        nonlocal y
+        if text is None:
+            text = ""
+        text = str(text)
+
+        # Blank line handling
+        if text.strip() == "":
+            if y < 40:
+                pdf.showPage()
+                pdf.setFont(font_name, font_size)
+                y = height - 50
+            y -= leading
+            return
+
+        words = text.split()
+        current = ""
+
+        for word in words:
+            candidate = (current + " " + word).strip()
+            text_width = pdf.stringWidth(candidate, font_name, font_size)
+            if text_width > max_width and current:
+                if y < 40:
+                    pdf.showPage()
+                    pdf.setFont(font_name, font_size)
+                    y = height - 50
+                pdf.drawString(left_margin, y, current)
+                y -= leading
+                current = word
+            else:
+                current = candidate
+
+        if current:
+            if y < 40:
+                pdf.showPage()
+                pdf.setFont(font_name, font_size)
+                y = height - 50
+            pdf.drawString(left_margin, y, current)
+            y -= leading
+
+    write_line("Career Guidance Report")
+    write_line("======================")
+    write_line()
+
+    careers = context.get("career_recommendations", [])
+    if careers:
+        write_line("Career Recommendations")
+        write_line("-----------------------")
+        for idx, career in enumerate(careers, start=1):
+            title = str(career.get("title", ""))
+            match = career.get("match_percentage")
+            match_text = f"{match}% Match" if match is not None else ""
+            why = str(career.get("why_suits", ""))
+            skills = career.get("required_skills") or []
+            learning = str(career.get("learning_path", ""))
+
+            write_line()
+            write_line(f"{idx}. {title} {f'({match_text})' if match_text else ''}")
+            if why:
+                write_line(f"   Why it suits you: {why}")
+            if skills:
+                write_line(f"   Required skills: {', '.join(map(str, skills))}")
+            if learning:
+                write_line(f"   Suggested learning path: {learning}")
+
+        write_line()
+
+    education = context.get("education_path") or {}
+    degrees = education.get("degrees") or []
+    certs = education.get("certifications") or []
+    skills_dev = education.get("skill_development") or []
+
+    if degrees or certs or skills_dev:
+        write_line("Education & Learning Path")
+        write_line("-------------------------")
+
+        if degrees:
+            write_line()
+            write_line("Recommended Degrees:")
+            for d in degrees:
+                write_line(f" - {d}")
+
+        if certs:
+            write_line()
+            write_line("Online Certifications:")
+            for c in certs:
+                write_line(f" - {c}")
+
+        if skills_dev:
+            write_line()
+            write_line("Skill Development Focus Areas:")
+            for s in skills_dev:
+                write_line(f" - {s}")
+
+        write_line()
+
+    timeline = context.get("growth_timeline") or []
+    if timeline:
+        write_line("Growth Timeline")
+        write_line("---------------")
+        for item in timeline:
+            level = str(item.get("level", ""))
+            role = str(item.get("role", ""))
+            desc = str(item.get("description", ""))
+            salary = str(item.get("salary", ""))
+
+            write_line()
+            if level:
+                write_line(level)
+            if role:
+                write_line(f"Role: {role}")
+            if desc:
+                write_line(f"Details: {desc}")
+            if salary:
+                write_line(f"Salary Range: {salary}")
+
+        write_line()
+
+    pdf.showPage()
+    pdf.save()
+    return response
 
 
 def chatbot_view(request):

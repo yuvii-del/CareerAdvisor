@@ -14,6 +14,19 @@
         <p>{{ ui.results_subtitle }}</p>
     </div>
 
+    <div class="results-container" style="margin-bottom: var(--spacing-lg);">
+        <div class="results-tabs">
+            <a href="{% url 'career_guidance_work' %}"
+               class="btn btn-ghost btn-action results-tab {% if page_type == 'work' %}results-tab-active{% endif %}">
+                Work & Career Path
+            </a>
+            <a href="{% url 'career_guidance_education' %}"
+               class="btn btn-ghost btn-action results-tab {% if page_type == 'education' %}results-tab-active{% endif %}">
+                Education & Learning Path
+            </a>
+        </div>
+    </div>
+
     {% if ai_error %}
     <div class="results-container" style="margin-bottom: var(--spacing-lg);">
         <div class="card" style="border-left: 4px solid #ef4444;">
@@ -26,6 +39,7 @@
     {% endif %}
     
     <div class="results-container">
+        {% if page_type == 'work' %}
         <div class="career-cards">
             {% for career in career_recommendations %}
             <div class="career-card">
@@ -42,14 +56,14 @@
                         <span>{{ career.match_percentage }}%</span>
                     </div>
                     <div class="match-bar">
-                        <div class="match-fill" style="width: {{ career.match_percentage }}%"></div>
+                        <div class="match-fill" data-width="{{ career.match_percentage }}"></div>
                     </div>
                 </div>
                 
                 <div class="career-details">
                     <div class="detail-section">
                         <div class="detail-title">
-                            <span>🎯</span>
+                            <i data-lucide="target" class="icon"></i>
                             <span>{{ ui.why_suits }}</span>
                         </div>
                         <div class="detail-content">{{ career.why_suits }}</div>
@@ -57,7 +71,7 @@
                     
                     <div class="detail-section">
                         <div class="detail-title">
-                            <span>💼</span>
+                            <i data-lucide="briefcase" class="icon"></i>
                             <span>{{ ui.required_skills }}</span>
                         </div>
                         <div class="skills-list">
@@ -69,7 +83,7 @@
                     
                     <div class="detail-section">
                         <div class="detail-title">
-                            <span>📚</span>
+                            <i data-lucide="book-open" class="icon"></i>
                             <span>{{ ui.suggested_learning_path }}</span>
                         </div>
                         <div class="detail-content">{{ career.learning_path }}</div>
@@ -78,7 +92,25 @@
             </div>
             {% endfor %}
         </div>
-        
+
+        <div class="growth-section">
+            <h2 class="section-heading">{{ ui.growth_timeline }}</h2>
+            
+            <div class="growth-timeline">
+                {% for item in growth_timeline %}
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>{{ item.level }}</h4>
+                        <p>{{ item.role }}</p>
+                        <p>{{ item.description }}</p>
+                        <span class="salary-range">{{ item.salary }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% elif page_type == 'education' %}
         <div class="education-section">
             <h2 class="section-heading">{{ ui.education_learning_path }}</h2>
             
@@ -137,34 +169,20 @@
                 </div>
             </div>
         </div>
-        
-        <div class="growth-section">
-            <h2 class="section-heading">{{ ui.growth_timeline }}</h2>
-            
-            <div class="growth-timeline">
-                {% for item in growth_timeline %}
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>{{ item.level }}</h4>
-                        <p>{{ item.role }}</p>
-                        <p>{{ item.description }}</p>
-                        <span class="salary-range">{{ item.salary }}</span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% endif %}
         
         <div class="action-buttons">
-            <button class="btn btn-primary btn-action" onclick="downloadReport()">
-                {{ ui.download_report }}
-            </button>
+            <a href="{% url 'career_guidance_pdf' %}" class="btn btn-primary btn-action">
+                <i data-lucide="download" class="icon"></i>
+                <span>{{ ui.download_report }}</span>
+            </a>
             <a href="{% url 'profile_analysis' %}" class="btn btn-secondary btn-action">
-                {{ ui.explore_another }}
+                <i data-lucide="compass" class="icon"></i>
+                <span>{{ ui.explore_another }}</span>
             </a>
             <a href="{% url 'profile_analysis' %}" class="btn btn-ghost btn-action">
-                {{ ui.update_profile }}
+                <i data-lucide="user" class="icon"></i>
+                <span>{{ ui.update_profile }}</span>
             </a>
         </div>
     </div>
@@ -175,15 +193,11 @@
 <script>
     window.addEventListener('load', function() {
         const progressBars = document.querySelectorAll('.match-fill');
-        progressBars.forEach(bar => {
-            const width = bar.style.width;
-            bar.style.width = '0';
-            setTimeout(() => { bar.style.width = width; }, 100);
+        progressBars.forEach(function (bar) {
+            const target = (bar.getAttribute('data-width') || '0') + '%';
+            bar.style.width = '0%';
+            setTimeout(function () { bar.style.width = target; }, 100);
         });
     });
-    
-    function downloadReport() {
-        alert('{{ ui.download_soon|escapejs }}');
-    }
 </script>
 {% endblock %}

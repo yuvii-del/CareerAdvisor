@@ -31,8 +31,14 @@
                     <label class="form-label" for="password">{{ ui.password }}</label>
                     <input type="password" id="password" name="password" class="form-input" placeholder="{{ ui.enter_password }}" required>
                 </div>
-                <button type="submit" name="action" value="login" class="btn btn-primary btn-login">{{ ui.login }}</button>
-                <button type="submit" name="action" value="guest" class="btn btn-guest">{{ ui.continue_guest }}</button>
+                <button type="submit" name="action" value="login" class="btn btn-primary btn-login">
+                    <i data-lucide="log-in" class="icon"></i>
+                    <span>{{ ui.login }}</span>
+                </button>
+                <button type="submit" name="action" value="guest" class="btn btn-guest">
+                    <i data-lucide="user" class="icon"></i>
+                    <span>{{ ui.continue_guest }}</span>
+                </button>
             </form>
             
             <div class="login-links">

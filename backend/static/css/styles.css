@@ -117,10 +117,14 @@ body {
    ============================================ */
 
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 10px 20px;
     font-size: 15px;
     font-weight: 600;
+    height: 51px;
     text-align: center;
     text-decoration: none;
     border: none;
@@ -129,6 +133,19 @@ body {
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
+}
+
+.icon,
+.btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.8;
+    stroke: currentColor;
+}
+
+.btn .icon,
+.btn svg {
+    margin-right: 0;
 }
 
 .btn-primary {
@@ -159,7 +176,7 @@ body {
 .btn-ghost {
     background: transparent;
     color: var(--primary-blue);
-    border: 2px solid transparent;
+    border: 2px solid var(--primary-blue);
 }
 
 .btn-ghost:hover {
