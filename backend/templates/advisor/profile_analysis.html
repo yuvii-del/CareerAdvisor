@@ -91,7 +91,8 @@
                 <div class="form-navigation">
                     <div></div>
                     <button type="button" class="btn btn-primary btn-nav" onclick="nextSection()">
-                        {{ ui.next_educational }}
+                        <i data-lucide="arrow-right" class="icon"></i>
+                        <span>{{ ui.next_educational }}</span>
                     </button>
                 </div>
             </div>
@@ -197,10 +198,12 @@
                 
                 <div class="form-navigation">
                     <button type="button" class="btn btn-secondary btn-nav" onclick="prevSection()">
-                        {{ ui.back }}
+                        <i data-lucide="arrow-left" class="icon"></i>
+                        <span>{{ ui.back }}</span>
                     </button>
                     <button type="submit" class="btn btn-primary btn-nav btn-analyze" id="analyzeBtn">
-                        {{ ui.analyze_profile }}
+                        <i data-lucide="search" class="icon"></i>
+                        <span>{{ ui.analyze_profile }}</span>
                     </button>
                 </div>
             </div>

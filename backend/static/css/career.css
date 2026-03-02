@@ -381,6 +381,30 @@
     font-size: 15px;
 }
 
+.results-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.04);
+}
+
+.results-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 14px;
+}
+
+.results-tab-active {
+    background: var(--primary-blue);
+    color: #ffffff !important;
+}
+
 @media (max-width: 968px) {
     .career-cards { grid-template-columns: 1fr; }
     .roadmap-steps { flex-direction: column; }

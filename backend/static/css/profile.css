@@ -187,7 +187,7 @@
 
 .btn-nav {
     flex: 1;
-    max-width: 200px;
+    max-width: 255px;
 }
 
 .btn-analyze {
@@ -202,7 +202,7 @@
     cursor: pointer;
     box-shadow: var(--shadow-lg);
     transition: all var(--transition-base);
-    margin-top: var(--spacing-lg);
+    /* margin-top: var(--spacing-lg); */
     animation: pulse 2s infinite;
 }
 
