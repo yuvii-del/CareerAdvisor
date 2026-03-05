@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Career Guidance History - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/career.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="results-header">
+        <h1>{{ ui.history_title|default:"Recent Career Guidance History" }}</h1>
+        <p>{{ ui.history_subtitle|default:"Review your recent career guidance results." }}</p>
+    </div>
+
+    <div class="results-container" style="margin-bottom: var(--spacing-lg);">
+        <a href="{% url 'profile_analysis' %}" class="btn btn-ghost btn-action">
+            <i data-lucide="compass" class="icon"></i>
+            <span>{{ ui.explore_another }}</span>
+        </a>
+        <a href="{% url 'career_guidance' %}" class="btn btn-ghost btn-action">
+            <i data-lucide="target" class="icon"></i>
+            <span>{{ ui.results_title }}</span>
+        </a>
+    </div>
+
+    <div class="results-container">
+        {% if history_items %}
+        <div class="career-cards">
+            {% for item in history_items %}
+            <div class="career-card">
+                <div class="career-header">
+                    <div>
+                        <h3 class="career-title">
+                            {% if item.profile.full_name %}
+                                {{ item.profile.full_name }}
+                            {% else %}
+                                {{ ui.platform_name }}
+                            {% endif %}
+                        </h3>
+                        <p style="font-size: 13px; color: var(--gray-500); margin-top: 4px;">
+                            {{ item.created_at|date:"M d, Y - H:i" }}
+                        </p>
+                    </div>
+                </div>
+
+                {% with recs=item.career_recommendations %}
+                {% if recs %}
+                <div class="career-details">
+                    <div class="detail-section">
+                        <div class="detail-title">
+                            <i data-lucide="briefcase" class="icon"></i>
+                            <span>{{ ui.results_title }}</span>
+                        </div>
+                        <ul class="course-list">
+                            {% for career in recs %}
+                            <li>
+                                <strong>{{ career.title }}</strong>
+                                {% if career.match_percentage %}
+                                    – {{ career.match_percentage }}% {{ ui.match_score }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card" style="padding: var(--spacing-lg); text-align: center;">
+            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: var(--spacing-sm);">
+                {{ ui.no_history|default:"No history yet" }}
+            </h2>
+            <p style="color: var(--gray-600); margin-bottom: var(--spacing-md);">
+                {{ ui.no_history_subtitle|default:"Generate your first career guidance result to see it here." }}
+            </p>
+            <a href="{% url 'profile_analysis' %}" class="btn btn-primary btn-action">
+                <i data-lucide="search" class="icon"></i>
+                <span>{{ ui.analyze_profile }}</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

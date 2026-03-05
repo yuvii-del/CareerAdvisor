@@ -184,6 +184,10 @@
                 <i data-lucide="user" class="icon"></i>
                 <span>{{ ui.update_profile }}</span>
             </a>
+            <a href="{% url 'career_history' %}" class="btn btn-ghost btn-action">
+                <i data-lucide="clock-3" class="icon"></i>
+                <span>{{ ui.view_history|default:"View History" }}</span>
+            </a>
         </div>
     </div>
 </div>

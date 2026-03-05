@@ -5,26 +5,165 @@ AI-ready: context variables prepared for future API integration.
 
 import json
 import os
+import random
+import string
 
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 from .i18n import normalize_lang, get_ui_strings, get_lang_from_request
+from .models import EmailOTP, CareerGuidanceHistory
+
+
+def _generate_otp(length: int = 6) -> str:
+    return "".join(random.choices(string.digits, k=length))
+
+
+def register_view(request):
+    """
+    Registration page: collect name, email, password, send OTP to email.
+    After successful POST, user is created as inactive and an OTP is emailed.
+    """
+    if request.method == "POST":
+        full_name = (request.POST.get("full_name") or "").strip()
+        email = (request.POST.get("email") or "").strip().lower()
+        password = request.POST.get("password") or ""
+        confirm_password = request.POST.get("confirm_password") or ""
+
+        if not full_name or not email or not password:
+            messages.error(request, "All fields are required.")
+            return render(request, "advisor/register.html")
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "advisor/register.html")
+
+        if User.objects.filter(email=email, is_active=True).exists():
+            messages.error(request, "An active account with this email already exists. Please login.")
+            return render(request, "advisor/register.html")
+
+        # Either get an existing inactive user for this email or create a new one
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "username": email,
+                "first_name": full_name,
+                "is_active": False,
+            },
+        )
+        if not created:
+            user.first_name = full_name
+            user.is_active = False
+        user.set_password(password)
+        user.save()
+
+        # Generate and store OTP
+        code = _generate_otp()
+        EmailOTP.objects.create(user=user, code=code)
+
+        # Persist pending user in session
+        request.session["pending_user_id"] = user.id
+
+        # Send OTP email (uses configured EMAIL_BACKEND)
+        send_mail(
+            subject="Your Career Advisor verification code",
+            message=f"Hello {full_name},\n\nYour verification code is: {code}\n\nIf you did not request this, you can ignore this email.",
+            from_email=None,
+            recipient_list=[email],
+            fail_silently=True,
+        )
+
+        # In development, also show the code on screen to make testing easy.
+        msg = "We sent a verification code to your email. Please enter it to verify your account."
+        if getattr(settings, "DEBUG", False):
+            msg += f" (For testing, your code is: {code})"
+        messages.success(request, msg)
+        return redirect("verify_otp")
+
+    return render(request, "advisor/register.html")
+
+
+def verify_otp_view(request):
+    """
+    OTP verification page. Activates the user and logs them in on success.
+    """
+    pending_user_id = request.session.get("pending_user_id")
+    user = None
+    if pending_user_id:
+        try:
+            user = User.objects.get(id=pending_user_id)
+        except User.DoesNotExist:
+            user = None
+
+    if not user:
+        messages.error(request, "No pending registration found. Please create an account first.")
+        return redirect("register")
+
+    if request.method == "POST":
+        code = (request.POST.get("otp") or "").strip()
+        otp_qs = (
+            EmailOTP.objects.filter(user=user, code=code, is_used=False)
+            .order_by("-created_at")
+        )
+        otp = otp_qs.first()
+
+        if not otp:
+            messages.error(request, "Invalid verification code. Please try again.")
+            return render(request, "advisor/verify_otp.html")
+
+        if otp.is_expired:
+            messages.error(request, "This verification code has expired. Please register again to receive a new code.")
+            return redirect("register")
+
+        otp.is_used = True
+        otp.save()
+
+        user.is_active = True
+        user.save()
+
+        login(request, user)
+        messages.success(request, "Your account has been verified and you are now logged in.")
+        # After login, redirect to profile analysis page
+        return redirect("profile_analysis")
+
+    return render(request, "advisor/verify_otp.html")
 
 
 def login_view(request):
-    """Landing/Login page - split screen layout. UI only, no auth logic."""
+    """Landing/Login page - split screen layout with real auth + guest option."""
     # Allow setting language via querystring (e.g., /login/?lang=ta)
     if request.method == "GET" and request.GET.get("lang"):
         request.session["ui_lang"] = normalize_lang(request.GET.get("lang"))
 
-    if request.method == 'POST':
+    if request.method == "POST":
         # Save UI language preference (English/Tamil) for all pages
         request.session["ui_lang"] = normalize_lang(request.POST.get("ui_lang"))
 
-        # UI flow only: redirect to profile analysis
-        return redirect('profile_analysis')
-    return render(request, 'advisor/login.html')
+        action = request.POST.get("action")
+        if action == "guest":
+            # Allow guest access directly to profile analysis
+            return redirect("profile_analysis")
+
+        if action == "login":
+            username_or_email = (request.POST.get("username") or "").strip()
+            password = request.POST.get("password") or ""
+
+            # We store username as email for new registrations
+            user = authenticate(request, username=username_or_email, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect("profile_analysis")
+                messages.error(request, "Your account is not active. Please verify your email.")
+            else:
+                messages.error(request, "Invalid email or password. Please try again.")
+
+    return render(request, "advisor/login.html")
 
 
 def profile_analysis_view(request):
@@ -238,6 +377,29 @@ def build_career_guidance_context(request):
                     growth_timeline = data["growth_timeline"]
         except Exception as e:
             ai_error = str(e)
+
+    # Persist a history snapshot so we can show recent career growth information.
+    if request.method == "POST":
+        # Ensure the session has a key so we can associate guest history.
+        if not request.session.session_key:
+            request.session.save()
+        session_key = request.session.session_key or ""
+        history_user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+
+        try:
+            CareerGuidanceHistory.objects.create(
+                user=history_user,
+                session_key=session_key,
+                ui_lang=ui_lang,
+                profile=profile,
+                career_recommendations=career_recommendations,
+                education_path=education_path,
+                growth_timeline=growth_timeline,
+            )
+        except Exception:
+            # History persistence should never break the main flow,
+            # so we swallow errors here.
+            pass
 
     return {
         "career_recommendations": career_recommendations,
@@ -468,3 +630,39 @@ def chatbot_view(request):
         else:
             msg = "There was an error while talking to the AI. Please try again later."
         return JsonResponse({"reply": msg, "error": str(exc)}, status=500)
+
+
+def career_history_view(request):
+    """
+    Show a recent history page of generated career growth information.
+    - For logged-in users, history is scoped to their account.
+    - For guests, history is scoped to the current browser session.
+    """
+    ui_lang = get_lang_from_request(request)
+    ui = get_ui_strings(ui_lang)
+
+    history_user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+
+    if not request.session.session_key:
+        request.session.save()
+    session_key = request.session.session_key or ""
+
+    qs = CareerGuidanceHistory.objects.all()
+    if history_user:
+        qs = qs.filter(user=history_user)
+    elif session_key:
+        qs = qs.filter(session_key=session_key)
+    else:
+        qs = qs.none()
+
+    history_items = qs.order_by("-created_at")[:20]
+
+    return render(
+        request,
+        "advisor/career_history.html",
+        {
+            "history_items": history_items,
+            "ui": ui,
+            "ui_lang": ui_lang,
+        },
+    )

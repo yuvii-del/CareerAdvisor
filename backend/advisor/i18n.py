@@ -104,6 +104,12 @@ UI_STRINGS = {
         "explore_another": " Explore Another Career Path",
         "update_profile": " Update Profile",
         "download_soon": "Career Report download feature will be available soon!",
+        # History
+        "view_history": " View History",
+        "history_title": "Recent Career Guidance History",
+        "history_subtitle": "Review the latest career guidance results generated for you.",
+        "no_history": "No history yet",
+        "no_history_subtitle": "Generate your first career guidance result to see it here.",
     },
     "ta": {
         # Global
@@ -197,6 +203,12 @@ UI_STRINGS = {
         "explore_another": " மற்றொரு தொழில் பாதையை ஆராயவும்",
         "update_profile": " சுயவிவரத்தை புதுப்பிக்கவும்",
         "download_soon": "தொழில் அறிக்கை பதிவிறக்க வசதி விரைவில் வரும்!",
+        # History
+        "view_history": " வரலாற்றைப் பார்க்கவும்",
+        "history_title": "சமீபத்திய தொழில் ஆலோசனை வரலாறு",
+        "history_subtitle": "உங்களுக்கு உருவாக்கப்பட்ட சமீபத்திய தொழில் ஆலோசனை முடிவுகளை இங்கு பார்க்கலாம்.",
+        "no_history": "இன்னும் வரலாறு இல்லை",
+        "no_history_subtitle": "முதற்கண் தொழில் ஆலோசனை முடிவை உருவாக்கி இங்கு பார்க்கவும்.",
     },
 }
 

@@ -86,6 +86,37 @@
     border-radius: var(--radius-md);
 }
 
+/* Inline form messages (Django messages) */
+.form-messages {
+    padding: 0;
+    margin: var(--spacing-sm) 0;
+    color: var(--red-500);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.form-messages .message {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--red-500);
+}
+
+.form-messages .message.error {
+    background-color: #fef2f2;
+    color: var(--red-500) !important;
+    border-left: 3px solid var(--red-500);
+    font-weight: 600;       
+}
+
+.form-messages .message.success {
+    background-color: #ecfdf3;
+    color: #166534;
+    border-left: 3px solid #22c55e;
+}
+
 .login-form .btn-login {
     width: 100%;
     padding: 16px;

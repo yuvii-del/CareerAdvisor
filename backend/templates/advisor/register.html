@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - Career & Educational Advisor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-left">
+        <div class="login-card">
+            <div class="login-logo">
+                <h1>{{ ui.create_account }}</h1>
+            </div>
+
+            {% if messages %}
+                <p style="color: red;">
+                    {% for message in messages %}
+                        <p style="color: red;">{{ message }}</p>
+                    {% endfor %}
+                </p>
+            {% endif %}
+
+            <form class="login-form" method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="full_name">{{ ui.full_name }}</label>
+                    <input type="text" id="full_name" name="full_name" class="form-input" placeholder="{{ ui.full_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">{{ ui.email_or_username }}</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="{{ ui.enter_email_or_username }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">{{ ui.password }}</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="{{ ui.enter_password }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Re-enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i data-lucide="user-plus" class="icon"></i>
+                    <span>{{ ui.create_account }}</span>
+                </button>
+                <div class="login-links">
+                    <a href="{% url 'login' %}">{{ ui.back_to_login }}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-hero-bg"></div>
+        <div class="login-hero-text">
+            <h2>{{ ui.hero_title }}</h2>
+            <p>{{ ui.hero_subtitle }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
