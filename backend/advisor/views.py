@@ -12,9 +12,14 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import PasswordResetView as BasePasswordResetView
 from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from .i18n import normalize_lang, get_ui_strings, get_lang_from_request
 from .models import EmailOTP, CareerGuidanceHistory
@@ -134,6 +139,38 @@ def verify_otp_view(request):
     return render(request, "advisor/verify_otp.html")
 
 
+class PasswordResetView(BasePasswordResetView):
+    """Store reset link in session when DEBUG so user can click it from the done page."""
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        if getattr(settings, "DEBUG", False):
+            users = User.objects.filter(email__iexact=email, is_active=True)
+            for user in users[:1]:
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+                path = reverse(
+                    "password_reset_confirm",
+                    kwargs={"uidb64": uid, "token": token},
+                )
+                protocol = "https" if self.request.is_secure() else "http"
+                domain = self.request.get_host()
+                reset_link = f"{protocol}://{domain}{path}"
+                self.request.session["password_reset_link"] = reset_link
+                break
+        return super().form_valid(form)
+
+
+def password_reset_done_view(request):
+    """Show done page and, in DEBUG, the clickable reset link from session."""
+    reset_link = request.session.pop("password_reset_link", None)
+    return render(
+        request,
+        "advisor/password_reset_done.html",
+        {"reset_link": reset_link},
+    )
+
+
 def login_view(request):
     """Landing/Login page - split screen layout with real auth + guest option."""
     # Allow setting language via querystring (e.g., /login/?lang=ta)
@@ -193,9 +230,11 @@ def build_career_guidance_context(request):
             "twelfth_specialization",
             "twelfth_percentage",
             "current_course",
+            "subjects",
             "skills",
             "strengths",
             "interests",
+            "other_interest",
         ]:
             profile[key] = (request.POST.get(key) or "").strip()
 
@@ -301,6 +340,166 @@ def build_career_guidance_context(request):
             {"level": "Senior Level (5-10 years)", "role": "Senior Software Engineer / Tech Lead", "description": "Lead teams, architect solutions, and drive technical decisions.", "salary": "₹15-30 LPA"},
             {"level": "Expert Level (10+ years)", "role": "Principal Engineer / Engineering Manager / CTO", "description": "Shape organizational strategy, innovate, and build scalable systems.", "salary": "₹30+ LPA"},
         ]
+
+    # Subject-aware tuning of fallback (e.g., Math + Computer Science for school students)
+    subjects_text = (profile.get("subjects") or "").lower()
+    if request.method == "POST" and subjects_text:
+        has_math = "math" in subjects_text
+        has_cs = "computer" in subjects_text or "cs" in subjects_text
+        if has_math and has_cs:
+            if ui_lang == "ta":
+                career_recommendations = [
+                    {
+                        "title": "மென்பொருள் உருவாக்குனர் (Software Developer)",
+                        "match_percentage": 95,
+                        "why_suits": "நீங்கள் கணிதமும் கணினி அறிவியலும் படிப்பதால், பெரிய பிரச்சனைகளை சிறு படிகளாகப் பிழிந்து தீர்க்கும் திறன் உங்களுக்கு உள்ளது. இந்த திறன் மென்பொருள், வலைத்தளம், மொபைல் அப்புகளை உருவாக்க மிகவும் உதவும்.",
+                        "required_skills": [
+                            "அடிப்படை கணிதம்",
+                            "நிரலாக்கம் (Programming)",
+                            "பிரச்சனை தீர்க்கும் திறன்",
+                            "கவனச்சீர்மை",
+                        ],
+                        "learning_path": "பள்ளி கணிதப் பாடங்கள் → C/Python போன்ற மொழிகளில் நிரலாக்க அடிப்படைகள் → சிறிய project-கள் (calculator, game, website) → internship / part-time projects.",
+                    },
+                    {
+                        "title": "டேட்டா விஞ்ஞானி (Data Scientist)",
+                        "match_percentage": 90,
+                        "why_suits": "நீங்கள் எண்கள், கிராஃப்கள், தரவுகளை விரும்பினால், கணிதமும் நிரலாக்கமும் சேர்ந்த இந்த துறை உங்களுக்கு பொருந்தும். நீங்கள் தரவிலிருந்து பயனுள்ள தகவல்களை கண்டுபிடிப்பீர்கள்.",
+                        "required_skills": [
+                            "புள்ளியியல் அடிப்படைகள்",
+                            "Python நிரலாக்கம்",
+                            "தரவு பகுப்பாய்வு",
+                            "தர்க்க சிந்தனை",
+                        ],
+                        "learning_path": "அடிப்படை புள்ளியியல் மற்றும் probability → Python → data analysis (pandas, Excel) → சிறிய data projects → கல்லூரியில் Data Science / AI பாடநெறி.",
+                    },
+                    {
+                        "title": "கேம் டெவலப்பர் (Game Developer)",
+                        "match_percentage": 85,
+                        "why_suits": "வீடியோ கேம்கள், animation போன்றவற்றில் ஆர்வம் இருந்தால், கணிதம் (movement, score, physics) மற்றும் கணினி நிரலாக்கம் இரண்டும் இங்கு முக்கியம். நீங்கள் குழந்தைகளுக்கும் இளைஞர்களுக்கும் புதுசாக கேம்களை உருவாக்கலாம்.",
+                        "required_skills": [
+                            "கணித அடிப்படைகள் (geometry, logic)",
+                            "நிரலாக்கம் (C#, C++, Python)",
+                            "படைப்பாற்றல்",
+                            "குழுப்பணி",
+                        ],
+                        "learning_path": "பள்ளி கணிதத்தை நன்றாகக் கற்றல் → game engines (Unity, Unreal) அறிதல் → சிறிய game projects → கல்லூரியில் Game Dev / Computer Science degree.",
+                    },
+                ]
+                education_path = {
+                    "degrees": [
+                        "B.Sc / B.Tech கணினி அறிவியல்",
+                        "B.Tech தகவல் தொழில்நுட்பம்",
+                        "B.Sc Mathematics + Computer Science",
+                    ],
+                    "certifications": [
+                        "Intro to Programming (Python/JavaScript)",
+                        "Data Science / Analytics அடிப்படை course",
+                        "Game Development (Unity / Unreal)",
+                    ],
+                    "skill_development": [
+                        "தினசரி programming பயிற்சி (small problems)",
+                        "ஆன்லைன் math & coding challenges",
+                        "Team projects மற்றும் hackathon அனுபவம்",
+                    ],
+                }
+                growth_timeline = [
+                    {
+                        "level": "தொடக்க நிலை (0-2 ஆண்டுகள்)",
+                        "role": "Junior Developer / Intern",
+                        "description": "அடிப்படைகளை கற்றுக்கொண்டு, சிறிய project-களில் பங்கேற்று, seniors-ிடம் இருந்து கற்றுக்கொள்வது.",
+                        "salary": "₹3-6 LPA (மாறுபடும்)",
+                    },
+                    {
+                        "level": "இடைநிலை (2-5 ஆண்டுகள்)",
+                        "role": "Software Engineer / Data Analyst / Game Developer",
+                        "description": "முக்கிய அம்சங்களை செய்யும் பொறுப்பு, real-world systems-இல் வேலை.",
+                        "salary": "₹6-12 LPA (மாறுபடும்)",
+                    },
+                    {
+                        "level": "மூத்த நிலை (5+ ஆண்டுகள்)",
+                        "role": "Senior Engineer / Tech Lead",
+                        "description": "குழுக்களை வழிநடத்தல், வடிவமைப்பு முடிவுகள் எடுப்பது, இளம் developers-க்கு வழிகாட்டுதல்.",
+                        "salary": "₹12+ LPA (மாறுபடும்)",
+                    },
+                ]
+            else:
+                career_recommendations = [
+                    {
+                        "title": "Software Developer / Programmer",
+                        "match_percentage": 95,
+                        "why_suits": "You study Math and Computer Science, so you are already used to thinking step-by-step and solving puzzles. This career lets you turn ideas into apps, websites, and tools that real people use.",
+                        "required_skills": [
+                            "Basic mathematics",
+                            "Programming (e.g. Python, JavaScript)",
+                            "Logical thinking",
+                            "Problem solving",
+                            "Attention to detail",
+                        ],
+                        "learning_path": "School Math → Learn one programming language well → Build small projects (calculator, simple website, mini game) → Contribute to bigger projects and internships.",
+                    },
+                    {
+                        "title": "Data Scientist",
+                        "match_percentage": 90,
+                        "why_suits": "You like numbers and logic from Math, and you know how to code from Computer Science. As a data scientist you use both to understand data and help people make better decisions.",
+                        "required_skills": [
+                            "Statistics and probability basics",
+                            "Python programming",
+                            "Data analysis and visualization",
+                            "Curiosity about patterns in data",
+                        ],
+                        "learning_path": "Learn statistics basics → Learn Python for data → Practice with small datasets and charts → Study machine learning in college or online courses.",
+                    },
+                    {
+                        "title": "Game Developer",
+                        "match_percentage": 85,
+                        "why_suits": "If you enjoy games and creativity, Math helps you with movement, scoring and physics, while Computer Science helps you build the game itself. You can create fun experiences for other people.",
+                        "required_skills": [
+                            "Math basics (especially geometry and logic)",
+                            "Programming (C#, C++, or similar)",
+                            "Creative thinking",
+                            "Teamwork",
+                        ],
+                        "learning_path": "Strengthen school Math → Learn a language used in games (e.g. C# with Unity) → Build tiny games and experiments → Study Computer Science / Game Development after school.",
+                    },
+                ]
+                education_path = {
+                    "degrees": [
+                        "B.Sc / B.Tech in Computer Science",
+                        "B.Tech in Information Technology",
+                        "B.Sc Mathematics with Computer Science",
+                    ],
+                    "certifications": [
+                        "Intro to Programming (Python / JavaScript)",
+                        "Beginner Data Science / Analytics course",
+                        "Game Development with Unity or Unreal",
+                    ],
+                    "skill_development": [
+                        "Regular coding practice (small problems daily)",
+                        "Online math and coding challenges",
+                        "Team projects and hackathon experience",
+                    ],
+                }
+                growth_timeline = [
+                    {
+                        "level": "Entry Level (0-2 years)",
+                        "role": "Junior Developer / Intern",
+                        "description": "You learn foundations, fix bugs, and build small features while getting used to real-world projects.",
+                        "salary": "₹3-6 LPA (varies)",
+                    },
+                    {
+                        "level": "Mid Level (2-5 years)",
+                        "role": "Software Engineer / Data Analyst / Game Developer",
+                        "description": "You own full features end-to-end and work more independently on important parts of products.",
+                        "salary": "₹6-12 LPA (varies)",
+                    },
+                    {
+                        "level": "Senior Level (5+ years)",
+                        "role": "Senior Engineer / Tech Lead",
+                        "description": "You design systems, guide junior teammates, and help decide technical direction.",
+                        "salary": "₹12+ LPA (varies)",
+                    },
+                ]
 
     ai_error = None
 

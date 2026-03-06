@@ -42,14 +42,14 @@
                     <i data-lucide="log-in" class="icon"></i>
                     <span>{{ ui.login }}</span>
                 </button>
-                <button type="submit" name="action" value="guest" class="btn btn-guest">
+                <!-- <button type="submit" name="action" value="guest" class="btn btn-guest">
                     <i data-lucide="user" class="icon"></i>
                     <span>{{ ui.continue_guest }}</span>
-                </button>
+                </button> -->
             </form>
             
             <div class="login-links">
-                <a href="#">{{ ui.forgot_password }}</a>
+                <a href="{% url 'password_reset' %}">{{ ui.forgot_password }}</a>
                 <span class="divider">|</span>
                 <a href="{% url 'register' %}">{{ ui.create_account }}</a>
             </div>

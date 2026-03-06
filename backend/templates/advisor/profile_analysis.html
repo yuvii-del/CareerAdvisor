@@ -149,7 +149,21 @@
                             <input type="text" class="form-input" name="current_course" placeholder="{{ ui.current_course_placeholder }}">
                         </div>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label class="form-label">{{ ui.subjects_multiselect }}</label>
+                        <div class="tags-container" id="subjectsContainer">
+                            <span class="tag" data-value="math">Mathematics</span>
+                            <span class="tag" data-value="computer-science">Computer Science</span>
+                            <span class="tag" data-value="physics">Physics</span>
+                            <span class="tag" data-value="chemistry">Chemistry</span>
+                            <span class="tag" data-value="biology">Biology</span>
+                            <span class="tag" data-value="accounting">Accountancy</span>
+                            <span class="tag" data-value="economics">Economics</span>
+                        </div>
+                        <input type="hidden" name="subjects" id="subjectsInput">
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">{{ ui.skills_multiselect }}</label>
                         <div class="tags-container" id="skillsContainer">
@@ -194,6 +208,11 @@
                         </div>
                         <input type="hidden" name="interests" id="interestsInput">
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ ui.other_interest }}</label>
+                        <input type="text" class="form-input" name="other_interest" id="otherInterestInput" placeholder="{{ ui.other_interest_placeholder }}">
+                    </div>
                 </div>
                 
                 <div class="form-navigation">
@@ -218,7 +237,7 @@
     const totalSections = 2;
     
     function initTagSelection() {
-        ['skills', 'strengths', 'interests'].forEach(type => {
+        ['subjects', 'skills', 'strengths', 'interests'].forEach(type => {
             const container = document.getElementById(type + 'Container');
             const input = document.getElementById(type + 'Input');
             const tags = container.querySelectorAll('.tag');
