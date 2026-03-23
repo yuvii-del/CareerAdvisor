@@ -12,17 +12,27 @@
     <div class="results-header">
         <h1>{{ ui.results_title }}</h1>
         <p>{{ ui.results_subtitle }}</p>
+        <div style="margin-top: 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'edit_profile' %}" class="btn btn-ghost btn-action">
+                <i data-lucide="user" class="icon"></i>
+                <span>{{ ui.update_profile }}</span>
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-ghost btn-action">
+                <i data-lucide="log-out" class="icon"></i>
+                <span>Logout</span>
+            </a>
+        </div>
     </div>
 
     <div class="results-container" style="margin-bottom: var(--spacing-lg);">
         <div class="results-tabs">
-            <a href="{% url 'career_guidance_work' %}"
-               class="btn btn-ghost btn-action results-tab {% if page_type == 'work' %}results-tab-active{% endif %}">
-                Work & Career Path
-            </a>
             <a href="{% url 'career_guidance_education' %}"
                class="btn btn-ghost btn-action results-tab {% if page_type == 'education' %}results-tab-active{% endif %}">
                 Education & Learning Path
+            </a>
+            <a href="{% url 'career_guidance_work' %}"
+               class="btn btn-ghost btn-action results-tab {% if page_type == 'work' %}results-tab-active{% endif %}">
+                Work & Career Path
             </a>
         </div>
     </div>
@@ -176,13 +186,9 @@
                 <i data-lucide="download" class="icon"></i>
                 <span>{{ ui.download_report }}</span>
             </a>
-            <a href="{% url 'profile_analysis' %}" class="btn btn-secondary btn-action">
+            <a href="{% url 'preferences' %}" class="btn btn-secondary btn-action">
                 <i data-lucide="compass" class="icon"></i>
                 <span>{{ ui.explore_another }}</span>
-            </a>
-            <a href="{% url 'profile_analysis' %}" class="btn btn-ghost btn-action">
-                <i data-lucide="user" class="icon"></i>
-                <span>{{ ui.update_profile }}</span>
             </a>
             <a href="{% url 'career_history' %}" class="btn btn-ghost btn-action">
                 <i data-lucide="clock-3" class="icon"></i>

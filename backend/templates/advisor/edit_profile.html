@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Create Account - Career & Educational Advisor{% endblock %}
+{% block title %}Edit Profile - Career Advisor{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
@@ -10,96 +10,78 @@
 {% block content %}
 <div class="profile-page">
     <div class="profile-header">
-        <h1>{{ ui.create_account }}</h1>
-        <p>Create your account once. We will save your profile details for future suggestions.</p>
+        <h1>{{ ui.update_profile }}</h1>
+        <p>Update your saved basic and academic details.</p>
     </div>
 
     <div class="form-container">
-        <form method="post" action="{% url 'register' %}">
+        <form method="post" action="{% url 'edit_profile' %}">
             {% csrf_token %}
 
             {% if messages %}
                 <div class="section-card" style="margin-bottom: var(--spacing-md);">
                     {% for message in messages %}
-                        <p style="color: #b91c1c; margin-bottom: 6px;">{{ message }}</p>
+                        <p style="margin-bottom: 6px; color: #b91c1c;">{{ message }}</p>
                     {% endfor %}
                 </div>
             {% endif %}
 
             <div class="section-card">
-                <h2 class="section-title">Account Details</h2>
+                <h2 class="section-title">{{ ui.basic_details }}</h2>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="full_name">{{ ui.full_name }} *</label>
-                        <input type="text" id="full_name" name="full_name" class="form-input" required>
+                        <label class="form-label">{{ ui.full_name }} *</label>
+                        <input type="text" class="form-input" name="full_name" value="{{ request.user.first_name }}" required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="email">{{ ui.email_or_username }} *</label>
-                        <input type="email" id="email" name="email" class="form-input" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" for="password">{{ ui.password }} *</label>
-                        <input type="password" id="password" name="password" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="confirm_password">Confirm Password *</label>
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-card">
-                <h2 class="section-title">Basic Details</h2>
-                <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">{{ ui.age }} *</label>
-                        <input type="number" class="form-input" name="age" min="16" max="30" required>
+                        <input type="number" class="form-input" name="age" min="16" max="30" value="{{ profile.age|default:'' }}" required>
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">{{ ui.gender }} *</label>
                         <select class="form-input" name="gender" required>
                             <option value="">{{ ui.select_gender }}</option>
-                            <option value="male">{{ ui.male }}</option>
-                            <option value="female">{{ ui.female }}</option>
-                            <option value="other">{{ ui.other }}</option>
-                            <option value="prefer-not-to-say">{{ ui.prefer_not_to_say }}</option>
+                            <option value="male" {% if profile.gender == "male" %}selected{% endif %}>{{ ui.male }}</option>
+                            <option value="female" {% if profile.gender == "female" %}selected{% endif %}>{{ ui.female }}</option>
+                            <option value="other" {% if profile.gender == "other" %}selected{% endif %}>{{ ui.other }}</option>
+                            <option value="prefer-not-to-say" {% if profile.gender == "prefer-not-to-say" %}selected{% endif %}>{{ ui.prefer_not_to_say }}</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ ui.city_state }} *</label>
+                        <input type="text" class="form-input" name="location" value="{{ profile.location }}" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">{{ ui.city_state }} *</label>
-                        <input type="text" class="form-input" name="location" placeholder="{{ ui.location_placeholder }}" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">{{ ui.preferred_language }} *</label>
                         <select class="form-input" name="language" required>
                             <option value="">{{ ui.select_language }}</option>
-                            <option value="english">{{ ui.english }}</option>
-                            <option value="tamil">{{ ui.tamil }}</option>
-                            <option value="both">{{ ui.both }}</option>
+                            <option value="english" {% if profile.preferred_language == "english" %}selected{% endif %}>{{ ui.english }}</option>
+                            <option value="tamil" {% if profile.preferred_language == "tamil" %}selected{% endif %}>{{ ui.tamil }}</option>
+                            <option value="both" {% if profile.preferred_language == "both" %}selected{% endif %}>{{ ui.both }}</option>
                         </select>
                     </div>
                 </div>
             </div>
 
             <div class="section-card">
-                <h2 class="section-title">Academic Details</h2>
+                <h2 class="section-title">{{ ui.educational_details }}</h2>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">{{ ui.school_board }} *</label>
                         <select class="form-input" name="school_board" required>
                             <option value="">{{ ui.select_board }}</option>
-                            <option value="cbse">CBSE</option>
-                            <option value="icse">ICSE</option>
-                            <option value="state_board">State Board</option>
+                            <option value="cbse" {% if profile.school_board == "cbse" %}selected{% endif %}>CBSE</option>
+                            <option value="icse" {% if profile.school_board == "icse" %}selected{% endif %}>ICSE</option>
+                            <option value="state_board" {% if profile.school_board == "state_board" %}selected{% endif %}>State Board</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">{{ ui.tenth_percentage }} *</label>
-                        <input type="number" class="form-input" name="tenth_percentage" min="0" max="100" step="0.01" required>
+                        <input type="number" class="form-input" name="tenth_percentage" min="0" max="100" step="0.01" value="{{ profile.tenth_percentage|default:'' }}" required>
                     </div>
                 </div>
                 <div class="form-row">
@@ -107,30 +89,30 @@
                         <label class="form-label">{{ ui.twelfth_stream }} *</label>
                         <select class="form-input" name="twelfth_stream" required>
                             <option value="">{{ ui.select_stream }}</option>
-                            <option value="science">{{ ui.science }}</option>
-                            <option value="commerce">{{ ui.commerce }}</option>
-                            <option value="arts">{{ ui.arts }}</option>
+                            <option value="science" {% if profile.twelfth_stream == "science" %}selected{% endif %}>{{ ui.science }}</option>
+                            <option value="commerce" {% if profile.twelfth_stream == "commerce" %}selected{% endif %}>{{ ui.commerce }}</option>
+                            <option value="arts" {% if profile.twelfth_stream == "arts" %}selected{% endif %}>{{ ui.arts }}</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">{{ ui.twelfth_specialization }} *</label>
                         <select class="form-input" name="twelfth_specialization" required>
                             <option value="">{{ ui.select_specialization }}</option>
-                            <option value="pcm">PCM (Physics, Chemistry, Mathematics)</option>
-                            <option value="pcb">PCB (Physics, Chemistry, Biology)</option>
-                            <option value="commerce">Commerce</option>
-                            <option value="humanities">Humanities</option>
+                            <option value="pcm" {% if profile.twelfth_specialization == "pcm" %}selected{% endif %}>PCM (Physics, Chemistry, Mathematics)</option>
+                            <option value="pcb" {% if profile.twelfth_specialization == "pcb" %}selected{% endif %}>PCB (Physics, Chemistry, Biology)</option>
+                            <option value="commerce" {% if profile.twelfth_specialization == "commerce" %}selected{% endif %}>Commerce</option>
+                            <option value="humanities" {% if profile.twelfth_specialization == "humanities" %}selected{% endif %}>Humanities</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">{{ ui.twelfth_percentage }} *</label>
-                        <input type="number" class="form-input" name="twelfth_percentage" min="0" max="100" step="0.01" required>
+                        <input type="number" class="form-input" name="twelfth_percentage" min="0" max="100" step="0.01" value="{{ profile.twelfth_percentage|default:'' }}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">{{ ui.current_course }}</label>
-                        <input type="text" class="form-input" name="current_course" placeholder="{{ ui.current_course_placeholder }}">
+                        <input type="text" class="form-input" name="current_course" value="{{ profile.current_course }}">
                     </div>
                 </div>
 
@@ -145,16 +127,13 @@
                         <span class="tag" data-value="accounting">Accountancy</span>
                         <span class="tag" data-value="economics">Economics</span>
                     </div>
-                    <input type="hidden" name="subjects" id="subjectsInput">
+                    <input type="hidden" name="subjects" id="subjectsInput" value="{{ profile.subjects }}">
                 </div>
             </div>
 
             <div class="form-navigation">
-                <a href="{% url 'login' %}" class="btn btn-secondary btn-nav">{{ ui.back_to_login }}</a>
-                <button type="submit" class="btn btn-primary btn-nav">
-                    <i data-lucide="user-plus" class="icon"></i>
-                    <span>{{ ui.create_account }}</span>
-                </button>
+                <a href="{% url 'preferences' %}" class="btn btn-secondary btn-nav">{{ ui.back }}</a>
+                <button type="submit" class="btn btn-primary btn-nav">{{ ui.update_profile }}</button>
             </div>
         </form>
     </div>
@@ -166,16 +145,16 @@
     (function () {
         const container = document.getElementById('subjectsContainer');
         const input = document.getElementById('subjectsInput');
-        const selected = [];
-
         if (!container || !input) return;
+        const selected = input.value ? input.value.split(',').filter(Boolean) : [];
 
         container.querySelectorAll('.tag').forEach(tag => {
+            const value = tag.getAttribute('data-value');
+            if (selected.includes(value)) tag.classList.add('selected');
             tag.addEventListener('click', function () {
                 this.classList.toggle('selected');
-                const value = this.getAttribute('data-value');
                 if (this.classList.contains('selected')) {
-                    selected.push(value);
+                    if (!selected.includes(value)) selected.push(value);
                 } else {
                     const idx = selected.indexOf(value);
                     if (idx > -1) selected.splice(idx, 1);

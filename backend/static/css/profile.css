@@ -5,7 +5,10 @@
 .profile-page {
     min-height: 100vh;
     padding: var(--spacing-xl) 0;
-    background: linear-gradient(135deg, #f5f7fb 0%, #e0e7ff 100%);
+    background:
+        radial-gradient(700px 300px at 10% 0%, rgba(99, 102, 241, 0.24), transparent 60%),
+        radial-gradient(700px 320px at 90% 0%, rgba(139, 92, 246, 0.2), transparent 58%),
+        linear-gradient(135deg, #f7f9ff 0%, #e8edff 52%, #f2edff 100%);
 }
 
 .profile-header {

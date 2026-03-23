@@ -7,10 +7,11 @@ import json
 import os
 import random
 import string
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView as BasePasswordResetView
@@ -22,11 +23,23 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from .i18n import normalize_lang, get_ui_strings, get_lang_from_request
-from .models import EmailOTP, CareerGuidanceHistory
+from .models import EmailOTP, CareerGuidanceHistory, StudentProfile
 
 
 def _generate_otp(length: int = 6) -> str:
     return "".join(random.choices(string.digits, k=length))
+
+
+def _to_decimal(value: str | None):
+    if value is None:
+        return None
+    value = str(value).strip()
+    if not value:
+        return None
+    try:
+        return Decimal(value)
+    except (InvalidOperation, ValueError):
+        return None
 
 
 def register_view(request):
@@ -40,8 +53,23 @@ def register_view(request):
         password = request.POST.get("password") or ""
         confirm_password = request.POST.get("confirm_password") or ""
 
+        required_profile_fields = [
+            "age",
+            "gender",
+            "location",
+            "language",
+            "school_board",
+            "tenth_percentage",
+            "twelfth_stream",
+            "twelfth_specialization",
+            "twelfth_percentage",
+        ]
+
         if not full_name or not email or not password:
             messages.error(request, "All fields are required.")
+            return render(request, "advisor/register.html")
+        if any(not (request.POST.get(k) or "").strip() for k in required_profile_fields):
+            messages.error(request, "Please complete all required basic and academic details.")
             return render(request, "advisor/register.html")
 
         if password != confirm_password:
@@ -66,6 +94,22 @@ def register_view(request):
             user.is_active = False
         user.set_password(password)
         user.save()
+
+        # Persist full signup profile details so user does not re-enter after login.
+        profile, _ = StudentProfile.objects.get_or_create(user=user)
+        raw_age = (request.POST.get("age") or "").strip()
+        profile.age = int(raw_age) if raw_age.isdigit() else None
+        profile.gender = (request.POST.get("gender") or "").strip()
+        profile.location = (request.POST.get("location") or "").strip()
+        profile.preferred_language = (request.POST.get("language") or "").strip()
+        profile.school_board = (request.POST.get("school_board") or "").strip()
+        profile.tenth_percentage = _to_decimal(request.POST.get("tenth_percentage"))
+        profile.twelfth_stream = (request.POST.get("twelfth_stream") or "").strip()
+        profile.twelfth_specialization = (request.POST.get("twelfth_specialization") or "").strip()
+        profile.twelfth_percentage = _to_decimal(request.POST.get("twelfth_percentage"))
+        profile.current_course = (request.POST.get("current_course") or "").strip()
+        profile.subjects = (request.POST.get("subjects") or "").strip()
+        profile.save()
 
         # Generate and store OTP
         code = _generate_otp()
@@ -133,8 +177,8 @@ def verify_otp_view(request):
 
         login(request, user)
         messages.success(request, "Your account has been verified and you are now logged in.")
-        # After login, redirect to profile analysis page
-        return redirect("profile_analysis")
+        # After login, go directly to preferences page.
+        return redirect("preferences")
 
     return render(request, "advisor/verify_otp.html")
 
@@ -183,8 +227,8 @@ def login_view(request):
 
         action = request.POST.get("action")
         if action == "guest":
-            # Allow guest access directly to profile analysis
-            return redirect("profile_analysis")
+            # Allow guest access directly to preferences page
+            return redirect("preferences")
 
         if action == "login":
             username_or_email = (request.POST.get("username") or "").strip()
@@ -195,7 +239,7 @@ def login_view(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return redirect("profile_analysis")
+                    return redirect("preferences")
                 messages.error(request, "Your account is not active. Please verify your email.")
             else:
                 messages.error(request, "Invalid email or password. Please try again.")
@@ -203,9 +247,83 @@ def login_view(request):
     return render(request, "advisor/login.html")
 
 
+def logout_view(request):
+    """Simple logout flow."""
+    logout(request)
+    messages.success(request, "You have been logged out successfully.")
+    return redirect("login")
+
+
 def profile_analysis_view(request):
-    """Profile analysis form - collects student details for AI analysis."""
-    return render(request, 'advisor/profile_analysis.html')
+    """Legacy route: redirect to new preferences flow."""
+    return redirect("preferences")
+
+
+def preferences_view(request):
+    """
+    Preferences page after login.
+    Uses stored signup details and asks only preference-related inputs.
+    """
+    profile = None
+    if getattr(request, "user", None) and request.user.is_authenticated:
+        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+
+    context = {
+        "profile": profile,
+    }
+    return render(request, "advisor/preferences.html", context)
+
+
+def edit_profile_view(request):
+    """
+    Edit saved basic + academic details for logged-in users.
+    """
+    if not getattr(request, "user", None) or not request.user.is_authenticated:
+        messages.error(request, "Please login to edit your profile.")
+        return redirect("login")
+
+    profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        full_name = (request.POST.get("full_name") or "").strip()
+        raw_age = (request.POST.get("age") or "").strip()
+
+        required_fields = [
+            full_name,
+            raw_age,
+            (request.POST.get("gender") or "").strip(),
+            (request.POST.get("location") or "").strip(),
+            (request.POST.get("language") or "").strip(),
+            (request.POST.get("school_board") or "").strip(),
+            (request.POST.get("tenth_percentage") or "").strip(),
+            (request.POST.get("twelfth_stream") or "").strip(),
+            (request.POST.get("twelfth_specialization") or "").strip(),
+            (request.POST.get("twelfth_percentage") or "").strip(),
+        ]
+        if any(not item for item in required_fields):
+            messages.error(request, "Please complete all required fields.")
+            return render(request, "advisor/edit_profile.html", {"profile": profile})
+
+        request.user.first_name = full_name
+        request.user.save(update_fields=["first_name"])
+
+        profile.age = int(raw_age) if raw_age.isdigit() else None
+        profile.gender = (request.POST.get("gender") or "").strip()
+        profile.location = (request.POST.get("location") or "").strip()
+        profile.preferred_language = (request.POST.get("language") or "").strip()
+        profile.school_board = (request.POST.get("school_board") or "").strip()
+        profile.tenth_percentage = _to_decimal(request.POST.get("tenth_percentage"))
+        profile.twelfth_stream = (request.POST.get("twelfth_stream") or "").strip()
+        profile.twelfth_specialization = (request.POST.get("twelfth_specialization") or "").strip()
+        profile.twelfth_percentage = _to_decimal(request.POST.get("twelfth_percentage"))
+        profile.current_course = (request.POST.get("current_course") or "").strip()
+        profile.subjects = (request.POST.get("subjects") or "").strip()
+        profile.save()
+
+        messages.success(request, "Profile updated successfully.")
+        return redirect("preferences")
+
+    return render(request, "advisor/edit_profile.html", {"profile": profile})
 
 
 def build_career_guidance_context(request):
@@ -213,17 +331,44 @@ def build_career_guidance_context(request):
     ui_lang = get_lang_from_request(request)
     ui = get_ui_strings(ui_lang)
 
-    # --- Collect profile inputs (POST) for AI prompt (future-ready) ---
+    # --- Build profile from stored signup details + submitted preferences ---
     profile = {}
+    stored_profile = None
+    if getattr(request, "user", None) and request.user.is_authenticated:
+        stored_profile = StudentProfile.objects.filter(user=request.user).first()
+
+    if stored_profile:
+        profile = {
+            "full_name": request.user.first_name or request.user.username,
+            "age": str(stored_profile.age or ""),
+            "gender": stored_profile.gender or "",
+            "location": stored_profile.location or "",
+            "language": stored_profile.preferred_language or "",
+            "interest_level": stored_profile.interest_level or "",
+            "school_board": stored_profile.school_board or "",
+            "tenth_percentage": str(stored_profile.tenth_percentage or ""),
+            "twelfth_stream": stored_profile.twelfth_stream or "",
+            "twelfth_specialization": stored_profile.twelfth_specialization or "",
+            "twelfth_percentage": str(stored_profile.twelfth_percentage or ""),
+            "current_course": stored_profile.current_course or "",
+            "subjects": stored_profile.subjects or "",
+            "skills": stored_profile.skills or "",
+            "strengths": stored_profile.strengths or "",
+            "interests": stored_profile.interests or "",
+            "other_interest": stored_profile.other_interest or "",
+        }
+
     if request.method == "POST":
-        # Keep keys stable for later model integration
+        for key in ["interest_level", "skills", "strengths", "interests", "other_interest"]:
+            profile[key] = (request.POST.get(key) or "").strip()
+
+        # Support guests/legacy by reading full fields if posted.
         for key in [
             "full_name",
             "age",
             "gender",
             "location",
             "language",
-            "interest_level",
             "school_board",
             "tenth_percentage",
             "twelfth_stream",
@@ -231,12 +376,18 @@ def build_career_guidance_context(request):
             "twelfth_percentage",
             "current_course",
             "subjects",
-            "skills",
-            "strengths",
-            "interests",
-            "other_interest",
         ]:
-            profile[key] = (request.POST.get(key) or "").strip()
+            posted = (request.POST.get(key) or "").strip()
+            if posted:
+                profile[key] = posted
+
+        if stored_profile:
+            stored_profile.interest_level = profile.get("interest_level", "")
+            stored_profile.skills = profile.get("skills", "")
+            stored_profile.strengths = profile.get("strengths", "")
+            stored_profile.interests = profile.get("interests", "")
+            stored_profile.other_interest = profile.get("other_interest", "")
+            stored_profile.save()
 
     # --- Defaults (safe fallback) ---
     if ui_lang == "ta":
@@ -505,11 +656,13 @@ def build_career_guidance_context(request):
 
     # Determine which sub-page we are on (work vs education)
     resolver_match = getattr(request, "resolver_match", None)
-    if resolver_match and resolver_match.url_name == "career_guidance_education":
+    if resolver_match and resolver_match.url_name == "career_guidance_work":
+        page_type = "work"
+    elif resolver_match and resolver_match.url_name == "career_guidance_education":
         page_type = "education"
     else:
-        # Default to work view (also used for original 'career_guidance' path)
-        page_type = "work"
+        # Default to education view
+        page_type = "education"
 
     # --- Gemini integration (server-side) ---
     # IMPORTANT: Do NOT hardcode keys. Set GEMINI_API_KEY in your environment.
@@ -586,7 +739,7 @@ def build_career_guidance_context(request):
         history_user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
 
         try:
-            CareerGuidanceHistory.objects.create(
+            history_item = CareerGuidanceHistory.objects.create(
                 user=history_user,
                 session_key=session_key,
                 ui_lang=ui_lang,
@@ -595,10 +748,33 @@ def build_career_guidance_context(request):
                 education_path=education_path,
                 growth_timeline=growth_timeline,
             )
+            request.session["last_history_id"] = history_item.id
         except Exception:
             # History persistence should never break the main flow,
             # so we swallow errors here.
             pass
+    else:
+        # For GET requests (tabs/PDF), reuse last generated snapshot if available.
+        history_item = None
+        last_history_id = request.session.get("last_history_id")
+        if last_history_id:
+            history_item = CareerGuidanceHistory.objects.filter(id=last_history_id).first()
+        if not history_item:
+            if not request.session.session_key:
+                request.session.save()
+            session_key = request.session.session_key or ""
+            history_user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+            qs = CareerGuidanceHistory.objects.all()
+            if history_user:
+                qs = qs.filter(user=history_user)
+            elif session_key:
+                qs = qs.filter(session_key=session_key)
+            history_item = qs.order_by("-created_at").first()
+        if history_item:
+            profile = history_item.profile or profile
+            career_recommendations = history_item.career_recommendations or career_recommendations
+            education_path = history_item.education_path or education_path
+            growth_timeline = history_item.growth_timeline or growth_timeline
 
     return {
         "career_recommendations": career_recommendations,
@@ -608,6 +784,7 @@ def build_career_guidance_context(request):
         "ui": ui,
         "ui_lang": ui_lang,
         "page_type": page_type,
+        "profile": profile,
     }
 
 
@@ -686,6 +863,34 @@ def career_guidance_pdf_view(request):
     write_line("Career Guidance Report")
     write_line("======================")
     write_line()
+
+    profile = context.get("profile") or {}
+    if profile:
+        write_line("Student Profile & Preferences")
+        write_line("------------------------------")
+        basic_fields = [
+            ("Name", profile.get("full_name")),
+            ("Age", profile.get("age")),
+            ("Gender", profile.get("gender")),
+            ("Location", profile.get("location")),
+            ("Preferred Language", profile.get("language")),
+            ("School Board", profile.get("school_board")),
+            ("10th Percentage", profile.get("tenth_percentage")),
+            ("12th Stream", profile.get("twelfth_stream")),
+            ("12th Specialization", profile.get("twelfth_specialization")),
+            ("12th Percentage", profile.get("twelfth_percentage")),
+            ("Current Course", profile.get("current_course")),
+            ("Subjects", profile.get("subjects")),
+            ("Interest Level", profile.get("interest_level")),
+            ("Skills", profile.get("skills")),
+            ("Strengths", profile.get("strengths")),
+            ("Interests", profile.get("interests")),
+            ("Other Interest", profile.get("other_interest")),
+        ]
+        for label, value in basic_fields:
+            if value:
+                write_line(f"{label}: {value}")
+        write_line()
 
     careers = context.get("career_recommendations", [])
     if careers:

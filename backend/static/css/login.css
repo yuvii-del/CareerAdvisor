@@ -6,6 +6,10 @@
     min-height: 100vh;
     display: flex;
     flex-wrap: wrap;
+    background:
+        radial-gradient(760px 340px at 12% 0%, rgba(99, 102, 241, 0.2), transparent 58%),
+        radial-gradient(760px 340px at 90% 0%, rgba(139, 92, 246, 0.2), transparent 58%),
+        linear-gradient(135deg, #f7f9ff 0%, #e8edff 52%, #f4eeff 100%);
 }
 
 /* Left Section - Login Form (40-45%) */
@@ -16,7 +20,8 @@
     align-items: center;
     justify-content: center;
     padding: var(--spacing-xl);
-    background: var(--white);
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(4px);
 }
 
 .login-card {
@@ -169,7 +174,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 50%, #fce7f3 100%);
+    background: linear-gradient(135deg, #dfe6ff 0%, #e8e2ff 50%, #f7dff0 100%);
     position: relative;
     overflow: hidden;
 }

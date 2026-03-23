@@ -8,6 +8,7 @@ from . import views
 
 urlpatterns = [
     path("login/", views.login_view, name="login"),
+    path("logout/", views.logout_view, name="logout"),
     path("register/", views.register_view, name="register"),
     path("verify-otp/", views.verify_otp_view, name="verify_otp"),
     path(
@@ -40,6 +41,8 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("profile-analysis/", views.profile_analysis_view, name="profile_analysis"),
+    path("preferences/", views.preferences_view, name="preferences"),
+    path("profile/edit/", views.edit_profile_view, name="edit_profile"),
     path("career-guidance/", views.career_guidance_view, name="career_guidance"),  # default (work view)
     path("career-guidance/work/", views.career_guidance_view, name="career_guidance_work"),
     path("career-guidance/education/", views.career_guidance_view, name="career_guidance_education"),

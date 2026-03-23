@@ -15,7 +15,7 @@
     </div>
 
     <div class="results-container" style="margin-bottom: var(--spacing-lg);">
-        <a href="{% url 'profile_analysis' %}" class="btn btn-ghost btn-action">
+        <a href="{% url 'preferences' %}" class="btn btn-ghost btn-action">
             <i data-lucide="compass" class="icon"></i>
             <span>{{ ui.explore_another }}</span>
         </a>
@@ -78,7 +78,7 @@
             <p style="color: var(--gray-600); margin-bottom: var(--spacing-md);">
                 {{ ui.no_history_subtitle|default:"Generate your first career guidance result to see it here." }}
             </p>
-            <a href="{% url 'profile_analysis' %}" class="btn btn-primary btn-action">
+            <a href="{% url 'preferences' %}" class="btn btn-primary btn-action">
                 <i data-lucide="search" class="icon"></i>
                 <span>{{ ui.analyze_profile }}</span>
             </a>

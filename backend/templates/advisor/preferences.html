@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preferences - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/preferences.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <h1>Your Preferences</h1>
+        <p>Select your interests and strengths to generate personalized suggestions.</p>
+        <div class="pref-top-actions">
+            <a href="{% url 'edit_profile' %}" class="btn btn-ghost btn-action">{{ ui.update_profile }}</a>
+            <a href="{% url 'logout' %}" class="btn btn-ghost btn-action">Logout</a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form id="preferencesForm" method="post" action="{% url 'career_guidance' %}">
+            {% csrf_token %}
+            <div class="section-card pref-summary-card">
+                <h2 class="section-title">Saved Profile</h2>
+                <div class="pref-summary-grid">
+                    <div class="pref-summary-item">
+                        <span class="pref-summary-label">Name</span>
+                        <span class="pref-summary-value">{{ profile.user.first_name|default:profile.user.username }}</span>
+                    </div>
+                    <div class="pref-summary-item">
+                        <span class="pref-summary-label">Subjects</span>
+                        <span class="pref-summary-value">{{ profile.subjects|default:"Not selected yet" }}</span>
+                    </div>
+                    <div class="pref-summary-item">
+                        <span class="pref-summary-label">Board</span>
+                        <span class="pref-summary-value">{{ profile.school_board|default:"-"|upper }}</span>
+                    </div>
+                    <div class="pref-summary-item">
+                        <span class="pref-summary-label">Location</span>
+                        <span class="pref-summary-value">{{ profile.location|default:"-" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2 class="section-title">Preference Details</h2>
+                <p class="pref-helper-text">Pick the options that best describe you. You can update these anytime.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">{{ ui.career_interest_level }} *</label>
+                        <select class="form-input" name="interest_level" required>
+                            <option value="">Select Level</option>
+                            <option value="beginner" {% if profile.interest_level == "beginner" %}selected{% endif %}>{{ ui.beginner }}</option>
+                            <option value="exploring" {% if profile.interest_level == "exploring" %}selected{% endif %}>{{ ui.exploring }}</option>
+                            <option value="focused" {% if profile.interest_level == "focused" %}selected{% endif %}>{{ ui.focused }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ ui.skills_multiselect }}</label>
+                    <div class="tags-container" id="skillsContainer">
+                        <span class="tag" data-value="programming">Programming</span>
+                        <span class="tag" data-value="design">Design</span>
+                        <span class="tag" data-value="communication">Communication</span>
+                        <span class="tag" data-value="leadership">Leadership</span>
+                        <span class="tag" data-value="analytical">Analytical Thinking</span>
+                        <span class="tag" data-value="creative">Creative Writing</span>
+                        <span class="tag" data-value="problem-solving">Problem Solving</span>
+                        <span class="tag" data-value="teamwork">Teamwork</span>
+                    </div>
+                    <input type="hidden" name="skills" id="skillsInput" value="{{ profile.skills }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ ui.strengths_multiselect }}</label>
+                    <div class="tags-container" id="strengthsContainer">
+                        <span class="tag" data-value="logical">Logical</span>
+                        <span class="tag" data-value="creative">Creative</span>
+                        <span class="tag" data-value="communication">Communication</span>
+                        <span class="tag" data-value="leadership">Leadership</span>
+                        <span class="tag" data-value="technical">Technical</span>
+                        <span class="tag" data-value="artistic">Artistic</span>
+                    </div>
+                    <input type="hidden" name="strengths" id="strengthsInput" value="{{ profile.strengths }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ ui.interests_multiselect }}</label>
+                    <div class="tags-container" id="interestsContainer">
+                        <span class="tag" data-value="ai">AI & Machine Learning</span>
+                        <span class="tag" data-value="web-dev">Web Development</span>
+                        <span class="tag" data-value="medicine">Medicine</span>
+                        <span class="tag" data-value="business">Business</span>
+                        <span class="tag" data-value="govt-jobs">Government Jobs</span>
+                        <span class="tag" data-value="engineering">Engineering</span>
+                        <span class="tag" data-value="finance">Finance</span>
+                        <span class="tag" data-value="design">Design</span>
+                        <span class="tag" data-value="education">Education</span>
+                        <span class="tag" data-value="research">Research</span>
+                    </div>
+                    <input type="hidden" name="interests" id="interestsInput" value="{{ profile.interests }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ ui.other_interest }}</label>
+                    <input type="text" class="form-input" name="other_interest" value="{{ profile.other_interest }}" placeholder="{{ ui.other_interest_placeholder }}">
+                </div>
+            </div>
+
+            <div class="form-navigation">
+                <a href="{% url 'career_history' %}" class="btn btn-secondary btn-nav">{{ ui.view_history|default:"View History" }}</a>
+                <button id="analyzeBtn" type="submit" class="btn btn-primary btn-nav btn-analyze">
+                    <i data-lucide="search" class="icon"></i>
+                    <span>{{ ui.analyze_profile }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function initTagSelection(type) {
+        const container = document.getElementById(type + 'Container');
+        const input = document.getElementById(type + 'Input');
+        if (!container || !input) return;
+
+        const selected = input.value ? input.value.split(',').filter(Boolean) : [];
+        container.querySelectorAll('.tag').forEach(tag => {
+            const value = tag.getAttribute('data-value');
+            if (selected.includes(value)) tag.classList.add('selected');
+            tag.addEventListener('click', function () {
+                this.classList.toggle('selected');
+                if (this.classList.contains('selected')) {
+                    if (!selected.includes(value)) selected.push(value);
+                } else {
+                    const idx = selected.indexOf(value);
+                    if (idx > -1) selected.splice(idx, 1);
+                }
+                input.value = selected.join(',');
+            });
+        });
+    }
+
+    ['skills', 'strengths', 'interests'].forEach(initTagSelection);
+
+    document.getElementById('preferencesForm').addEventListener('submit', function() {
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

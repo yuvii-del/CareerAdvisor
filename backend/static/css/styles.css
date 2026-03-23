@@ -26,6 +26,7 @@
     --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     --gradient-secondary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
     --gradient-text: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    --gradient-page-bg: linear-gradient(135deg, #f9fbff 0%, #eef2ff 45%, #f5f3ff 100%);
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -73,7 +74,12 @@ body {
     font-size: 16px;
     line-height: 1.6;
     color: var(--gray-800);
-    background: var(--gray-50);
+    background:
+        radial-gradient(900px 420px at -8% -12%, rgba(99, 102, 241, 0.22), transparent 60%),
+        radial-gradient(820px 420px at 108% -8%, rgba(139, 92, 246, 0.19), transparent 58%),
+        radial-gradient(640px 320px at 52% 118%, rgba(236, 72, 153, 0.08), transparent 65%),
+        var(--gradient-page-bg);
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

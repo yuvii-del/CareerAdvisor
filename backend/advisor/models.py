@@ -55,3 +55,41 @@ class CareerGuidanceHistory(models.Model):
             return f"Career guidance for {self.user} at {self.created_at}"
         return f"Career guidance (guest) at {self.created_at}"
 
+
+class StudentProfile(models.Model):
+    """
+    Persistent user details captured during signup so students
+    do not need to re-enter the same information each session.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
+    )
+
+    age = models.PositiveSmallIntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=30, blank=True)
+    location = models.CharField(max_length=120, blank=True)
+    preferred_language = models.CharField(max_length=20, blank=True)
+
+    school_board = models.CharField(max_length=40, blank=True)
+    tenth_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    twelfth_stream = models.CharField(max_length=40, blank=True)
+    twelfth_specialization = models.CharField(max_length=80, blank=True)
+    twelfth_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    current_course = models.CharField(max_length=120, blank=True)
+    subjects = models.CharField(max_length=255, blank=True)
+
+    # Preferences that can be updated on preferences page.
+    interest_level = models.CharField(max_length=30, blank=True)
+    skills = models.CharField(max_length=255, blank=True)
+    strengths = models.CharField(max_length=255, blank=True)
+    interests = models.CharField(max_length=255, blank=True)
+    other_interest = models.CharField(max_length=255, blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Student profile for {self.user}"
+
