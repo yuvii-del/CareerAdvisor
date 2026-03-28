@@ -48,5 +48,6 @@ urlpatterns = [
     path("career-guidance/education/", views.career_guidance_view, name="career_guidance_education"),
     path("career-guidance/report/pdf/", views.career_guidance_pdf_view, name="career_guidance_pdf"),
     path("career-history/", views.career_history_view, name="career_history"),
+    path("career-history/<int:pk>/", views.career_history_detail_view, name="career_history_detail"),
     path("chatbot/", views.chatbot_view, name="chatbot"),
 ]

@@ -22,6 +22,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from .career_normalize import normalize_required_skills
 from .i18n import normalize_lang, get_ui_strings, get_lang_from_request
 from .models import EmailOTP, CareerGuidanceHistory, StudentProfile
 
@@ -723,6 +724,9 @@ def build_career_guidance_context(request):
             if isinstance(data, dict):
                 if isinstance(data.get("career_recommendations"), list) and data["career_recommendations"]:
                     career_recommendations = data["career_recommendations"]
+                    for c in career_recommendations:
+                        if isinstance(c, dict):
+                            c["required_skills"] = normalize_required_skills(c.get("required_skills"))
                 if isinstance(data.get("education_path"), dict):
                     education_path = data["education_path"]
                 if isinstance(data.get("growth_timeline"), list) and data["growth_timeline"]:
@@ -739,6 +743,14 @@ def build_career_guidance_context(request):
         history_user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
 
         try:
+            full_snapshot = {
+                "profile": profile,
+                "career_recommendations": career_recommendations,
+                "education_path": education_path,
+                "growth_timeline": growth_timeline,
+                "ai_error": ai_error,
+                "ui_lang": ui_lang,
+            }
             history_item = CareerGuidanceHistory.objects.create(
                 user=history_user,
                 session_key=session_key,
@@ -747,6 +759,8 @@ def build_career_guidance_context(request):
                 career_recommendations=career_recommendations,
                 education_path=education_path,
                 growth_timeline=growth_timeline,
+                ai_error=ai_error or "",
+                full_snapshot=full_snapshot,
             )
             request.session["last_history_id"] = history_item.id
         except Exception:
@@ -901,7 +915,7 @@ def career_guidance_pdf_view(request):
             match = career.get("match_percentage")
             match_text = f"{match}% Match" if match is not None else ""
             why = str(career.get("why_suits", ""))
-            skills = career.get("required_skills") or []
+            skills = normalize_required_skills(career.get("required_skills"))
             learning = str(career.get("learning_path", ""))
 
             write_line()
@@ -973,8 +987,9 @@ def career_guidance_pdf_view(request):
 
 def chatbot_view(request):
     """
-    Simple AJAX chatbot endpoint for the Profile Analysis page.
+    AJAX chatbot for profile / preferences pages.
     Expects JSON: {"message": "<user text>"} and returns {"reply": "<ai text>"}.
+    Uses GEMINI_API_KEY (Google Gemini) when set.
     """
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -1008,10 +1023,33 @@ def chatbot_view(request):
             else "Reply in English only."
         )
 
+        student_context = ""
+        if getattr(request, "user", None) and request.user.is_authenticated:
+            sp = StudentProfile.objects.filter(user=request.user).first()
+            if sp:
+                ctx = {
+                    "name": request.user.first_name or request.user.username,
+                    "age": sp.age,
+                    "location": sp.location,
+                    "preferred_language": sp.preferred_language,
+                    "school_board": sp.school_board,
+                    "subjects": sp.subjects,
+                    "interest_level": sp.interest_level,
+                    "skills": sp.skills,
+                    "strengths": sp.strengths,
+                    "interests": sp.interests,
+                    "other_interest": sp.other_interest,
+                }
+                student_context = (
+                    "\nThe student has saved this profile (use only if relevant; do not repeat it verbatim):\n"
+                    f"{json.dumps(ctx, ensure_ascii=False)}\n"
+                )
+
         prompt = (
             "You are a friendly career guidance chatbot for students.\n"
             "Keep answers short (2–4 sentences) and practical.\n"
-            f"{language_instruction}\n\n"
+            f"{language_instruction}\n"
+            f"{student_context}\n"
             f"User message: {user_message}\n"
         )
 
@@ -1034,6 +1072,52 @@ def chatbot_view(request):
         else:
             msg = "There was an error while talking to the AI. Please try again later."
         return JsonResponse({"reply": msg, "error": str(exc)}, status=500)
+
+
+def _history_record_allowed(request, history_item: CareerGuidanceHistory) -> bool:
+    """Logged-in users may only open their own rows; guests only session rows."""
+    user = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+    if user:
+        return history_item.user_id == user.id
+    if history_item.user_id is not None:
+        return False
+    if not request.session.session_key:
+        request.session.save()
+    sk = request.session.session_key or ""
+    return bool(sk and history_item.session_key == sk)
+
+
+def career_history_detail_view(request, pk: int):
+    """Full saved guidance result for one history row."""
+    item = CareerGuidanceHistory.objects.filter(pk=pk).first()
+    if not item or not _history_record_allowed(request, item):
+        messages.error(request, "You cannot view this history entry.")
+        return redirect("career_history")
+
+    snap = item.full_snapshot or {}
+    profile = snap.get("profile") if isinstance(snap.get("profile"), dict) else (item.profile or {})
+    career_recommendations = snap.get("career_recommendations") or item.career_recommendations or []
+    education_path = snap.get("education_path") if isinstance(snap.get("education_path"), dict) else (item.education_path or {})
+    growth_timeline = snap.get("growth_timeline") or item.growth_timeline or []
+    ai_error = snap.get("ai_error") if snap.get("ai_error") is not None else (item.ai_error or None)
+
+    ui_lang = normalize_lang(item.ui_lang or get_lang_from_request(request))
+    ui = get_ui_strings(ui_lang)
+
+    return render(
+        request,
+        "advisor/career_history_detail.html",
+        {
+            "item": item,
+            "profile": profile,
+            "career_recommendations": career_recommendations,
+            "education_path": education_path,
+            "growth_timeline": growth_timeline,
+            "ai_error": ai_error,
+            "ui": ui,
+            "ui_lang": ui_lang,
+        },
+    )
 
 
 def career_history_view(request):

@@ -67,6 +67,12 @@
                 </div>
                 {% endif %}
                 {% endwith %}
+                <div style="margin-top: var(--spacing-md);">
+                    <a href="{% url 'career_history_detail' item.pk %}" class="btn btn-primary btn-action">
+                        <i data-lucide="eye" class="icon"></i>
+                        <span>View full result</span>
+                    </a>
+                </div>
             </div>
             {% endfor %}
         </div>

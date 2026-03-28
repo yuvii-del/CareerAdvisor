@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load career_extras %}
 
 {% block title %}Career Guidance Results - Career Advisor{% endblock %}
 
@@ -71,32 +72,42 @@
                 </div>
                 
                 <div class="career-details">
-                    <div class="detail-section">
+                    <div class="detail-section detail-section--why">
                         <div class="detail-title">
                             <i data-lucide="target" class="icon"></i>
                             <span>{{ ui.why_suits }}</span>
                         </div>
-                        <div class="detail-content">{{ career.why_suits }}</div>
+                        <div class="detail-content detail-content--prose">{{ career.why_suits }}</div>
                     </div>
                     
-                    <div class="detail-section">
+                    <div class="detail-section detail-section--skills">
                         <div class="detail-title">
                             <i data-lucide="briefcase" class="icon"></i>
                             <span>{{ ui.required_skills }}</span>
                         </div>
-                        <div class="skills-list">
-                            {% for skill in career.required_skills %}
-                            <span class="skill-badge">{{ skill }}</span>
+                        <ul class="skills-grid" role="list">
+                            {% for skill in career.required_skills|required_skills_list %}
+                            <li class="skill-chip">
+                                <span class="skill-chip__icon" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
+                                <span class="skill-chip__text">{{ skill }}</span>
+                            </li>
                             {% endfor %}
-                        </div>
+                        </ul>
                     </div>
                     
-                    <div class="detail-section">
+                    <div class="detail-section detail-section--path">
                         <div class="detail-title">
                             <i data-lucide="book-open" class="icon"></i>
                             <span>{{ ui.suggested_learning_path }}</span>
                         </div>
-                        <div class="detail-content">{{ career.learning_path }}</div>
+                        <ul class="learning-path-list" role="list">
+                            {% for step in career.learning_path|learning_path_steps %}
+                            <li class="learning-path-list__item">
+                                <span class="learning-path-list__bullet" aria-hidden="true"></span>
+                                <span class="learning-path-list__text">{{ step }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -106,16 +117,28 @@
         <div class="growth-section">
             <h2 class="section-heading">{{ ui.growth_timeline }}</h2>
             
-            <div class="growth-timeline">
+            <div class="timeline-modern" role="list">
                 {% for item in growth_timeline %}
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>{{ item.level }}</h4>
-                        <p>{{ item.role }}</p>
-                        <p>{{ item.description }}</p>
-                        <span class="salary-range">{{ item.salary }}</span>
+                <div class="timeline-modern__row" role="listitem">
+                    <div class="timeline-modern__track" aria-hidden="true">
+                        <div class="timeline-modern__marker">
+                            <i data-lucide="{% cycle 'flag' 'trending-up' 'rocket' 'award' %}" class="icon timeline-modern__glyph"></i>
+                        </div>
+                        {% if not forloop.last %}
+                        <div class="timeline-modern__spine"></div>
+                        {% endif %}
                     </div>
+                    <article class="timeline-modern__card">
+                        <header class="timeline-modern__card-head">
+                            <span class="timeline-modern__step-label">Step {{ forloop.counter }}</span>
+                            <h4 class="timeline-modern__title">{{ item.level }}</h4>
+                        </header>
+                        <p class="timeline-modern__role">{{ item.role }}</p>
+                        <p class="timeline-modern__desc">{{ item.description }}</p>
+                        {% if item.salary %}
+                        <span class="salary-range salary-range--timeline">{{ item.salary }}</span>
+                        {% endif %}
+                    </article>
                 </div>
                 {% endfor %}
             </div>
@@ -156,25 +179,95 @@
                 </div>
             </div>
             
-            <div class="roadmap">
-                <h3 style="text-align: center; font-size: 24px; font-weight: 700; color: var(--gray-800); margin-bottom: var(--spacing-md);">
-                    {{ ui.skill_roadmap }}
-                </h3>
-                <div class="roadmap-steps">
-                    <div class="roadmap-step">
-                        <div class="roadmap-icon">1</div>
-                        <h4>{{ ui.roadmap_beginner }}</h4>
-                        <p>{{ ui.roadmap_beginner_desc }}</p>
-                    </div>
-                    <div class="roadmap-step">
-                        <div class="roadmap-icon">2</div>
-                        <h4>{{ ui.roadmap_intermediate }}</h4>
-                        <p>{{ ui.roadmap_intermediate_desc }}</p>
-                    </div>
-                    <div class="roadmap-step">
-                        <div class="roadmap-icon">3</div>
-                        <h4>{{ ui.roadmap_advanced }}</h4>
-                        <p>{{ ui.roadmap_advanced_desc }}</p>
+            <div class="roadmap-flow" id="skill-roadmap">
+                <h3 class="roadmap-flow__title">{{ ui.skill_roadmap }}</h3>
+                <div class="roadmap-flow__canvas">
+                    <svg class="roadmap-flow__svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 200 880" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <linearGradient id="skillRoadmapPathGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="45%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#4f46e5"/>
+                            </linearGradient>
+                            <filter id="skillRoadmapGlow" x="-80%" y="-20%" width="260%" height="140%" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="5" result="b"/>
+                                <feMerge>
+                                    <feMergeNode in="b"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <path class="roadmap-flow__path-glow" d="M 100 28 C 158 120 158 200 100 268 C 42 336 42 416 100 488 C 158 560 158 640 100 712 C 42 784 42 848 100 852" fill="none" stroke="url(#skillRoadmapPathGrad)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" opacity="0.22" filter="url(#skillRoadmapGlow)"/>
+                        <path class="roadmap-flow__path-main" d="M 100 28 C 158 120 158 200 100 268 C 42 336 42 416 100 488 C 158 560 158 640 100 712 C 42 784 42 848 100 852" fill="none" stroke="url(#skillRoadmapPathGrad)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path class="roadmap-flow__path-dash" d="M 100 28 C 158 120 158 200 100 268 C 42 336 42 416 100 488 C 158 560 158 640 100 712 C 42 784 42 848 100 852" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-dasharray="7 11" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+                    </svg>
+                    <div class="roadmap-flow__rows">
+                        <div class="roadmap-flow__row roadmap-flow__row--left">
+                            <div class="roadmap-flow__card-wrap">
+                                <article class="rm-card rm-card--step1">
+                                    <div class="rm-card__icon" aria-hidden="true"><i data-lucide="sprout" class="icon rm-card__glyph"></i></div>
+                                    <div class="rm-card__body">
+                                        <h4 class="rm-card__title">{{ ui.roadmap_beginner }}</h4>
+                                        <ul class="rm-card__list">
+                                            {% for item in ui.roadmap_beginner_bullets %}
+                                            <li>
+                                                <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
+                                                <span class="rm-card__text">{{ item }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="roadmap-flow__track">
+                                <div class="roadmap-flow__node"><span>1</span></div>
+                            </div>
+                            <div class="roadmap-flow__spacer" aria-hidden="true"></div>
+                        </div>
+                        <div class="roadmap-flow__row roadmap-flow__row--right">
+                            <div class="roadmap-flow__spacer" aria-hidden="true"></div>
+                            <div class="roadmap-flow__track">
+                                <div class="roadmap-flow__node"><span>2</span></div>
+                            </div>
+                            <div class="roadmap-flow__card-wrap">
+                                <article class="rm-card rm-card--step2">
+                                    <div class="rm-card__icon" aria-hidden="true"><i data-lucide="layers" class="icon rm-card__glyph"></i></div>
+                                    <div class="rm-card__body">
+                                        <h4 class="rm-card__title">{{ ui.roadmap_intermediate }}</h4>
+                                        <ul class="rm-card__list">
+                                            {% for item in ui.roadmap_intermediate_bullets %}
+                                            <li>
+                                                <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
+                                                <span class="rm-card__text">{{ item }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="roadmap-flow__row roadmap-flow__row--left">
+                            <div class="roadmap-flow__card-wrap">
+                                <article class="rm-card rm-card--step3">
+                                    <div class="rm-card__icon" aria-hidden="true"><i data-lucide="rocket" class="icon rm-card__glyph"></i></div>
+                                    <div class="rm-card__body">
+                                        <h4 class="rm-card__title">{{ ui.roadmap_advanced }}</h4>
+                                        <ul class="rm-card__list">
+                                            {% for item in ui.roadmap_advanced_bullets %}
+                                            <li>
+                                                <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
+                                                <span class="rm-card__text">{{ item }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="roadmap-flow__track">
+                                <div class="roadmap-flow__node"><span>3</span></div>
+                            </div>
+                            <div class="roadmap-flow__spacer" aria-hidden="true"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,6 +301,34 @@
             bar.style.width = '0%';
             setTimeout(function () { bar.style.width = target; }, 100);
         });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var root = document.getElementById('skill-roadmap');
+        function revealRoadmap() {
+            if (root) root.classList.add('roadmap-flow--visible');
+        }
+        if (!root) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            revealRoadmap();
+            return;
+        }
+        if (!('IntersectionObserver' in window)) {
+            revealRoadmap();
+            return;
+        }
+        var io = new IntersectionObserver(function (entries, ob) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    revealRoadmap();
+                    ob.disconnect();
+                }
+            });
+        }, { rootMargin: '60px 0px', threshold: 0.06 });
+        io.observe(root);
+        setTimeout(function () {
+            if (root && !root.classList.contains('roadmap-flow--visible')) revealRoadmap();
+        }, 2800);
     });
 </script>
 {% endblock %}

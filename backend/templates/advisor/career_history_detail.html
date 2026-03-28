@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load career_extras %}
+
+{% block title %}History detail - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/career.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="results-header">
+        <p style="margin-bottom: var(--spacing-sm);">
+            <a href="{% url 'career_history' %}" class="btn btn-ghost btn-action" style="display:inline-flex;">
+                <i data-lucide="arrow-left" class="icon"></i>
+                <span>{{ ui.view_history|default:"Back to history" }}</span>
+            </a>
+        </p>
+        <h1>{{ ui.history_title|default:"Saved guidance" }}</h1>
+        <p>{{ item.created_at|date:"M d, Y - H:i" }}</p>
+    </div>
+
+    {% if ai_error %}
+    <div class="results-container" style="margin-bottom: var(--spacing-lg);">
+        <div class="card" style="border-left: 4px solid #ef4444;">
+            <div style="font-weight: 700; margin-bottom: var(--spacing-xs);">{{ ui.ai_unavailable_title }}</div>
+            <div style="color: var(--gray-600); font-size: 14px;">
+                {{ ui.ai_unavailable_subtitle }} (Details: {{ ai_error }})
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="results-container" style="margin-bottom: var(--spacing-xl);">
+        <div class="education-section">
+            <h2 class="section-heading">Profile &amp; preferences (saved)</h2>
+            <div class="education-grid">
+                <div class="education-card">
+                    <h3>Basic</h3>
+                    <ul class="course-list">
+                        {% if profile.full_name %}<li><strong>Name:</strong> {{ profile.full_name }}</li>{% endif %}
+                        {% if profile.age %}<li><strong>Age:</strong> {{ profile.age }}</li>{% endif %}
+                        {% if profile.gender %}<li><strong>Gender:</strong> {{ profile.gender }}</li>{% endif %}
+                        {% if profile.location %}<li><strong>Location:</strong> {{ profile.location }}</li>{% endif %}
+                        {% if profile.language %}<li><strong>Language:</strong> {{ profile.language }}</li>{% endif %}
+                    </ul>
+                </div>
+                <div class="education-card">
+                    <h3>Academic</h3>
+                    <ul class="course-list">
+                        {% if profile.school_board %}<li><strong>Board:</strong> {{ profile.school_board }}</li>{% endif %}
+                        {% if profile.tenth_percentage %}<li><strong>10th:</strong> {{ profile.tenth_percentage }}%</li>{% endif %}
+                        {% if profile.twelfth_stream %}<li><strong>12th stream:</strong> {{ profile.twelfth_stream }}</li>{% endif %}
+                        {% if profile.twelfth_specialization %}<li><strong>Specialization:</strong> {{ profile.twelfth_specialization }}</li>{% endif %}
+                        {% if profile.twelfth_percentage %}<li><strong>12th:</strong> {{ profile.twelfth_percentage }}%</li>{% endif %}
+                        {% if profile.current_course %}<li><strong>Course:</strong> {{ profile.current_course }}</li>{% endif %}
+                        {% if profile.subjects %}<li><strong>Subjects:</strong> {{ profile.subjects }}</li>{% endif %}
+                    </ul>
+                </div>
+                <div class="education-card">
+                    <h3>Preferences</h3>
+                    <ul class="course-list">
+                        {% if profile.interest_level %}<li><strong>Interest level:</strong> {{ profile.interest_level }}</li>{% endif %}
+                        {% if profile.skills %}<li><strong>Skills:</strong> {{ profile.skills }}</li>{% endif %}
+                        {% if profile.strengths %}<li><strong>Strengths:</strong> {{ profile.strengths }}</li>{% endif %}
+                        {% if profile.interests %}<li><strong>Interests:</strong> {{ profile.interests }}</li>{% endif %}
+                        {% if profile.other_interest %}<li><strong>Other:</strong> {{ profile.other_interest }}</li>{% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <h2 class="section-heading" style="margin-bottom: var(--spacing-md);">{{ ui.results_title }}</h2>
+        <div class="career-cards">
+            {% for career in career_recommendations %}
+            <div class="career-card">
+                <div class="career-header">
+                    <div>
+                        <h3 class="career-title">{{ career.title }}</h3>
+                    </div>
+                    {% if career.match_percentage %}
+                    <span class="match-badge">{{ career.match_percentage }}% Match</span>
+                    {% endif %}
+                </div>
+                {% if career.match_percentage %}
+                <div class="match-percentage">
+                    <div class="match-label">
+                        <span>{{ ui.match_score }}</span>
+                        <span>{{ career.match_percentage }}%</span>
+                    </div>
+                    <div class="match-bar">
+                        <div class="match-fill" data-width="{{ career.match_percentage }}"></div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="career-details">
+                    {% if career.why_suits %}
+                    <div class="detail-section detail-section--why">
+                        <div class="detail-title">
+                            <i data-lucide="target" class="icon"></i>
+                            <span>{{ ui.why_suits }}</span>
+                        </div>
+                        <div class="detail-content detail-content--prose">{{ career.why_suits }}</div>
+                    </div>
+                    {% endif %}
+                    {% if career.required_skills %}
+                    <div class="detail-section detail-section--skills">
+                        <div class="detail-title">
+                            <i data-lucide="briefcase" class="icon"></i>
+                            <span>{{ ui.required_skills }}</span>
+                        </div>
+                        <ul class="skills-grid" role="list">
+                            {% for skill in career.required_skills|required_skills_list %}
+                            <li class="skill-chip">
+                                <span class="skill-chip__icon" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
+                                <span class="skill-chip__text">{{ skill }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    {% if career.learning_path %}
+                    <div class="detail-section detail-section--path">
+                        <div class="detail-title">
+                            <i data-lucide="book-open" class="icon"></i>
+                            <span>{{ ui.suggested_learning_path }}</span>
+                        </div>
+                        <ul class="learning-path-list" role="list">
+                            {% for step in career.learning_path|learning_path_steps %}
+                            <li class="learning-path-list__item">
+                                <span class="learning-path-list__bullet" aria-hidden="true"></span>
+                                <span class="learning-path-list__text">{{ step }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--gray-600);">No career recommendations stored for this entry.</p>
+            {% endfor %}
+        </div>
+
+        <div class="growth-section">
+            <h2 class="section-heading">{{ ui.growth_timeline }}</h2>
+            <div class="timeline-modern" role="list">
+                {% for row in growth_timeline %}
+                <div class="timeline-modern__row" role="listitem">
+                    <div class="timeline-modern__track" aria-hidden="true">
+                        <div class="timeline-modern__marker">
+                            <i data-lucide="{% cycle 'flag' 'trending-up' 'rocket' 'award' %}" class="icon timeline-modern__glyph"></i>
+                        </div>
+                        {% if not forloop.last %}
+                        <div class="timeline-modern__spine"></div>
+                        {% endif %}
+                    </div>
+                    <article class="timeline-modern__card">
+                        <header class="timeline-modern__card-head">
+                            <span class="timeline-modern__step-label">Step {{ forloop.counter }}</span>
+                            <h4 class="timeline-modern__title">{{ row.level }}</h4>
+                        </header>
+                        <p class="timeline-modern__role">{{ row.role }}</p>
+                        <p class="timeline-modern__desc">{{ row.description }}</p>
+                        {% if row.salary %}
+                        <span class="salary-range salary-range--timeline">{{ row.salary }}</span>
+                        {% endif %}
+                    </article>
+                </div>
+                {% empty %}
+                <p style="color: var(--gray-600);">No timeline stored.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="education-section" style="margin-top: var(--spacing-xl);">
+            <h2 class="section-heading">{{ ui.education_learning_path }}</h2>
+            <div class="education-grid">
+                <div class="education-card">
+                    <h3>{{ ui.recommended_degrees }}</h3>
+                    <p>{{ ui.formal_paths }}</p>
+                    <ul class="course-list">
+                        {% for degree in education_path.degrees %}
+                        <li>{{ degree }}</li>
+                        {% empty %}
+                        <li style="list-style:none;padding-left:0;color:var(--gray-500);">—</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="education-card">
+                    <h3>{{ ui.online_certifications }}</h3>
+                    <p>{{ ui.boost_skills }}</p>
+                    <ul class="course-list">
+                        {% for cert in education_path.certifications %}
+                        <li>{{ cert }}</li>
+                        {% empty %}
+                        <li style="list-style:none;padding-left:0;color:var(--gray-500);">—</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="education-card">
+                    <h3>{{ ui.skill_development }}</h3>
+                    <p>{{ ui.focus_areas }}</p>
+                    <ul class="course-list">
+                        {% for skill in education_path.skill_development %}
+                        <li>{{ skill }}</li>
+                        {% empty %}
+                        <li style="list-style:none;padding-left:0;color:var(--gray-500);">—</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.addEventListener('load', function() {
+        document.querySelectorAll('.match-fill').forEach(function (bar) {
+            const target = (bar.getAttribute('data-width') || '0') + '%';
+            bar.style.width = '0%';
+            setTimeout(function () { bar.style.width = target; }, 100);
+        });
+    });
+</script>
+{% endblock %}

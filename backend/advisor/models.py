@@ -45,6 +45,11 @@ class CareerGuidanceHistory(models.Model):
     education_path = models.JSONField(default=dict, blank=True)
     growth_timeline = models.JSONField(default=list, blank=True)
 
+    # Optional: AI failure message when Gemini was used but errored.
+    ai_error = models.TextField(blank=True)
+    # Complete snapshot for history detail view and auditing (mirrors main fields + meta).
+    full_snapshot = models.JSONField(default=dict, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
