@@ -44,10 +44,28 @@ backend/
 ├── templates/          # Base + advisor templates
 ├── static/
 │   ├── css/            # styles.css, login.css, profile.css, career.css
+│   ├── fonts/          # Vijaya.ttf for Tamil PDF support (download separately)
 │   └── js/
 ├── manage.py
 └── requirements.txt
 ```
+
+## Tamil PDF Font Setup (Important for Tamil Reports)
+
+To properly render Tamil text in PDF reports, you need the **Vijaya font**:
+
+### Option 1: Windows Built-in Font
+Vijaya usually comes pre-installed with Windows at:
+- `C:\Windows\Fonts\Vijaya.ttf`
+
+### Option 2: Manual Installation
+1. Download Vijaya font from a trusted source
+2. Place it in: `backend/static/fonts/Vijaya.ttf`
+3. The PDF generator will automatically detect and use it
+
+See `backend/static/fonts/README.md` for detailed instructions.
+
+Without this font, Tamil PDF reports may not display correctly.
 
 ## Future AI Integration
 

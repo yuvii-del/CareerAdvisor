@@ -7,12 +7,38 @@
         if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
+    // Get language-specific strings
+    function getChatStrings() {
+        // Check if we're on a Tamil page by looking at the URL or body class
+        const isTamil = document.body.classList.contains('tamil') || 
+                       window.location.pathname.includes('?lang=ta') ||
+                       (document.cookie && document.cookie.includes('ui_lang=ta'));
+        
+        if (isTamil) {
+            return {
+                open: 'Career chat',
+                you: 'நீங்கள்:',
+                bot: 'Bot:',
+                typing: 'Bot எழுதுகிறது...',
+                error: 'AI உரையாடலில் பிழை. பின்னர் முயற்சிக்கவும்.'
+            };
+        }
+        return {
+            open: 'Career chat',
+            you: 'You:',
+            bot: 'Bot:',
+            typing: 'Bot is typing...',
+            error: 'Unable to contact AI right now.'
+        };
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        const strings = getChatStrings();
         const chatToggle = document.createElement('button');
         chatToggle.type = 'button';
         chatToggle.className = 'btn btn-primary';
         chatToggle.setAttribute('aria-label', 'Open career chat');
-        chatToggle.setAttribute('title', 'Career chat');
+        chatToggle.setAttribute('title', strings.open);
         chatToggle.style.position = 'fixed';
         chatToggle.style.right = '20px';
         chatToggle.style.bottom = '20px';
@@ -75,7 +101,7 @@
 
             const userDiv = document.createElement('div');
             userDiv.style.marginBottom = '6px';
-            userDiv.innerHTML = '<strong>You:</strong> ' + text;
+            userDiv.innerHTML = '<strong>' + strings.you + '</strong> ' + text;
             chatMessages.appendChild(userDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             chatInput.value = '';
@@ -83,7 +109,7 @@
             const loadingDiv = document.createElement('div');
             loadingDiv.style.marginBottom = '6px';
             loadingDiv.style.color = 'var(--gray-500)';
-            loadingDiv.textContent = 'Bot is typing...';
+            loadingDiv.textContent = strings.typing;
             chatMessages.appendChild(loadingDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -103,7 +129,7 @@
                 const botDiv = document.createElement('div');
                 botDiv.style.marginBottom = '6px';
                 botDiv.style.color = 'var(--gray-700)';
-                botDiv.innerHTML = '<strong>Bot:</strong> ' + (data.reply || '[No reply]');
+                botDiv.innerHTML = '<strong>' + strings.bot + '</strong> ' + (data.reply || '[No reply]');
                 chatMessages.appendChild(botDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             } catch (err) {
@@ -111,7 +137,7 @@
                 const errDiv = document.createElement('div');
                 errDiv.style.marginBottom = '6px';
                 errDiv.style.color = '#b91c1c';
-                errDiv.innerHTML = '<strong>Error:</strong> Unable to contact AI right now.';
+                errDiv.innerHTML = '<strong>Error:</strong> ' + strings.error;
                 chatMessages.appendChild(errDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }

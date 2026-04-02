@@ -202,17 +202,18 @@
                         <path class="roadmap-flow__path-dash" d="M 100 28 C 158 120 158 200 100 268 C 42 336 42 416 100 488 C 158 560 158 640 100 712 C 42 784 42 848 100 852" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="2" stroke-dasharray="7 11" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
                     </svg>
                     <div class="roadmap-flow__rows">
+                        {% if skill_roadmap_data.beginner %}
                         <div class="roadmap-flow__row roadmap-flow__row--left">
                             <div class="roadmap-flow__card-wrap">
                                 <article class="rm-card rm-card--step1">
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="sprout" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
-                                        <h4 class="rm-card__title">{{ ui.roadmap_beginner }}</h4>
+                                        <h4 class="rm-card__title">{{ skill_roadmap_data.beginner.title }}</h4>
                                         <ul class="rm-card__list">
-                                            {% for item in ui.roadmap_beginner_bullets %}
+                                            {% for skill in skill_roadmap_data.beginner.skills %}
                                             <li>
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
-                                                <span class="rm-card__text">{{ item }}</span>
+                                                <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
@@ -224,6 +225,8 @@
                             </div>
                             <div class="roadmap-flow__spacer" aria-hidden="true"></div>
                         </div>
+                        {% endif %}
+                        {% if skill_roadmap_data.intermediate %}
                         <div class="roadmap-flow__row roadmap-flow__row--right">
                             <div class="roadmap-flow__spacer" aria-hidden="true"></div>
                             <div class="roadmap-flow__track">
@@ -233,12 +236,12 @@
                                 <article class="rm-card rm-card--step2">
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="layers" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
-                                        <h4 class="rm-card__title">{{ ui.roadmap_intermediate }}</h4>
+                                        <h4 class="rm-card__title">{{ skill_roadmap_data.intermediate.title }}</h4>
                                         <ul class="rm-card__list">
-                                            {% for item in ui.roadmap_intermediate_bullets %}
+                                            {% for skill in skill_roadmap_data.intermediate.skills %}
                                             <li>
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
-                                                <span class="rm-card__text">{{ item }}</span>
+                                                <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
@@ -246,17 +249,19 @@
                                 </article>
                             </div>
                         </div>
+                        {% endif %}
+                        {% if skill_roadmap_data.advanced %}
                         <div class="roadmap-flow__row roadmap-flow__row--left">
                             <div class="roadmap-flow__card-wrap">
                                 <article class="rm-card rm-card--step3">
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="rocket" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
-                                        <h4 class="rm-card__title">{{ ui.roadmap_advanced }}</h4>
+                                        <h4 class="rm-card__title">{{ skill_roadmap_data.advanced.title }}</h4>
                                         <ul class="rm-card__list">
-                                            {% for item in ui.roadmap_advanced_bullets %}
+                                            {% for skill in skill_roadmap_data.advanced.skills %}
                                             <li>
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
-                                                <span class="rm-card__text">{{ item }}</span>
+                                                <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
@@ -268,6 +273,7 @@
                             </div>
                             <div class="roadmap-flow__spacer" aria-hidden="true"></div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -789,6 +789,47 @@ def build_career_guidance_context(request):
             career_recommendations = history_item.career_recommendations or career_recommendations
             education_path = history_item.education_path or education_path
             growth_timeline = history_item.growth_timeline or growth_timeline
+            # Also restore AI error state from history
+            ai_error = history_item.ai_error or ai_error
+
+    # Build skill roadmap from AI results dynamically
+    skill_roadmap_data = {"beginner": None, "intermediate": None, "advanced": None}
+    if career_recommendations and isinstance(career_recommendations, list):
+        # Extract skills from all recommended careers to build dynamic roadmap
+        all_skills = []
+        for career in career_recommendations:
+            if isinstance(career, dict):
+                skills = normalize_required_skills(career.get("required_skills", []))
+                all_skills.extend(skills)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_skills = []
+        for skill in all_skills:
+            skill_key = skill.lower()
+            if skill_key not in seen:
+                seen.add(skill_key)
+                unique_skills.append(skill)
+        
+        # Categorize skills into roadmap stages based on complexity
+        if unique_skills:
+            # Split skills into three stages
+            n = len(unique_skills)
+            skill_roadmap_data["beginner"] = {
+                "title": ui["roadmap_beginner"],
+                "description": ui["roadmap_beginner_desc"],
+                "skills": unique_skills[:max(1, n//3)],
+            }
+            skill_roadmap_data["intermediate"] = {
+                "title": ui["roadmap_intermediate"],
+                "description": ui["roadmap_intermediate_desc"],
+                "skills": unique_skills[max(1, n//3):max(2, 2*n//3)],
+            }
+            skill_roadmap_data["advanced"] = {
+                "title": ui["roadmap_advanced"],
+                "description": ui["roadmap_advanced_desc"],
+                "skills": unique_skills[max(2, 2*n//3):],
+            }
 
     return {
         "career_recommendations": career_recommendations,
@@ -799,6 +840,7 @@ def build_career_guidance_context(request):
         "ui_lang": ui_lang,
         "page_type": page_type,
         "profile": profile,
+        "skill_roadmap_data": skill_roadmap_data,
     }
 
 
@@ -812,6 +854,9 @@ def career_guidance_pdf_view(request):
     """Generate a PDF download of the current career guidance results."""
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    import os
 
     context = build_career_guidance_context(request)
 
@@ -821,13 +866,48 @@ def career_guidance_pdf_view(request):
     pdf = canvas.Canvas(response, pagesize=A4)
     width, height = A4
 
+    # Try to register Vijaya font for Tamil Unicode support
+    vijaya_font_registered = False
+    vijaya_font_path = None
+    
+    # Common paths where Vijaya font might be located
+    possible_font_paths = [
+        r"C:\Windows\Fonts\Vijaya.ttf",
+        r"C:\Windows\Fonts\vijaya.ttf",
+        os.path.join(os.path.expanduser("~"), "AppData", "Local", "Microsoft", "Windows", "Fonts", "Vijaya.ttf"),
+        os.path.join(settings.BASE_DIR, "static", "fonts", "Vijaya.ttf"),
+    ]
+    
+    for font_path in possible_font_paths:
+        if os.path.exists(font_path):
+            try:
+                pdfmetrics.registerFont(TTFont('Vijaya', font_path))
+                vijaya_font_registered = True
+                vijaya_font_path = font_path
+                break
+            except Exception:
+                continue
+
     # Basic text settings
     left_margin = 40
     right_margin = 40
     max_width = width - left_margin - right_margin
-    font_name = "Helvetica"
-    font_size = 11
-    line_height = 14
+    
+    # Use Vijaya font for Tamil language, Helvetica for English
+    is_tamil = context.get("ui_lang") == "ta"
+    if is_tamil and vijaya_font_registered:
+        font_name = "Vijaya"
+        font_size = 14  # Vijaya needs larger size for readability
+        line_height = 18
+    else:
+        font_name = "Helvetica"
+        font_size = 11
+        line_height = 14
+    
+    # Fallback message if Tamil font not available
+    tamil_font_warning = None
+    if is_tamil and not vijaya_font_registered:
+        tamil_font_warning = "Tamil font not found. Installing Vijaya font will improve Tamil text rendering."
 
     pdf.setFont(font_name, font_size)
 

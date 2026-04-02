@@ -37,8 +37,9 @@ def learning_path_steps(value):
             return out
 
     # Common separators: arrows, bullets, newlines, semicolon+space
+    # Updated to handle Unicode arrows properly
     parts = re.split(
-        r"\s*(?:→|->|⟹|•|·|\n+|;\s+)(?=\S)",
+        r"\s*(?:→|->|⟹|•|·|\n+|;\s+)\s*",
         s,
     )
     parts = [p.strip() for p in parts if p.strip()]
