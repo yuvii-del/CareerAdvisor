@@ -397,21 +397,21 @@ def build_career_guidance_context(request):
                 "title": "மென்பொருள் பொறியாளர்",
                 "match_percentage": 92,
                 "why_suits": "உங்கள் தர்க்க சிந்தனை, நிரலாக்க ஆர்வம் மற்றும் பிரச்சனை தீர்க்கும் திறன் மென்பொருள் பொறியியலுக்கு மிகவும் பொருந்தும்.",
-                "required_skills": ["நிரலாக்கம்", "பிரச்சனை தீர்வு", "தர்க்க சிந்தனை", "குழுப்பணி", "தொடர்பாடல்"],
+                "required_skills": ["நிரலாக்கம்", "பிரச்சனை தீர்வு", "தர்க்க சிந்தனை", "குழுப்பணி", "தொடர்பாடல்", "ஆப் வடிவமைப்பு", "API ஒருங்கிணைப்பு", "பதிப்பு கட்டுப்பாடு (Git)", "சோதனை & பிழைத்திருத்தம்", " Agile முறைகள்"],
                 "learning_path": "அடிப்படைகள்: தரவுக் கட்டமைப்புகள் & ஆல்கொரிதம் → வலை மேம்பாடு → Full-Stack/AI சிறப்பு → திட்டங்கள் → பயிற்சி வேலை",
             },
             {
                 "title": "தரவு விஞ்ஞானி",
                 "match_percentage": 85,
                 "why_suits": "AI/ML பற்றிய ஆர்வமும் பகுப்பாய்வு திறனும் தரவு விஞ்ஞான துறைக்கு உங்களைத் தயாராக்குகிறது.",
-                "required_skills": ["புள்ளியியல்", "Python", "Machine Learning", "தரவு பகுப்பாய்வு", "விசுவலைசேஷன்"],
+                "required_skills": ["புள்ளியியல்", "Python", "Machine Learning", "தரவு பகுப்பாய்வு", "விசுவலைசேஷன்", "SQL", "Deep Learning", "NLP அடிப்படைகள்", "பெரிய தரவு கருவிகள்", "மாதிரி நிறுத்தல்"],
                 "learning_path": "புள்ளியியல் → Python → தரவு பகுப்பாய்வு → ML → DL → திட்டங்கள் → Kaggle",
             },
             {
                 "title": "தயாரிப்பு மேலாளர்",
                 "match_percentage": 78,
                 "why_suits": "உங்கள் தலைமைத்துவம் மற்றும் தொடர்பாடல் திறன் தொழில்நுட்பம்-வணிகம் இடையே பாலமாக இருக்க உதவும்.",
-                "required_skills": ["தலைமைத்துவம்", "தொடர்பாடல்", "திட்டமிடல்", "பயனர் ஆராய்ச்சி", "அனலிடிக்ஸ்"],
+                "required_skills": ["தலைமைத்துவம்", "தொடர்பாடல்", "திட்டமிடல்", "பயனர் ஆராய்ச்சி", "அனலிடிக்ஸ்", "சந்தை பகுப்பாய்வு", "வழி நடத்துதல்", "Agile/Scrum", "தரவு முடிவுகள்", "ஆக்ரோக்கமான சிந்தனை"],
                 "learning_path": "வணிக அடிப்படைகள் → Product Management → UX → Agile/Scrum → Portfolio → Internship → Job",
             },
         ]
@@ -447,21 +447,21 @@ def build_career_guidance_context(request):
                 "title": "Software Engineer",
                 "match_percentage": 92,
                 "why_suits": "Your strong analytical thinking, programming interest, and logical approach align perfectly with software engineering. Your problem-solving skills and technical aptitude make you an ideal candidate for this field.",
-                "required_skills": ["Programming", "Problem Solving", "Logical Thinking", "Teamwork", "Communication"],
+                "required_skills": ["Programming", "Problem Solving", "Logical Thinking", "Teamwork", "Communication", "App Design", "API Integration", "Version Control (Git)", "Testing & Debugging", "Agile Methodologies"],
                 "learning_path": "Start with fundamentals: Data Structures & Algorithms → Web Development → Specialize in Full-Stack or AI/ML → Build projects → Apply for internships",
             },
             {
                 "title": "Data Scientist",
                 "match_percentage": 85,
                 "why_suits": "Your interest in AI & Machine Learning, combined with strong analytical skills and mathematical background, positions you well for a career in data science.",
-                "required_skills": ["Statistics", "Python", "Machine Learning", "Data Analysis", "Visualization"],
+                "required_skills": ["Statistics", "Python", "Machine Learning", "Data Analysis", "Visualization", "SQL", "Deep Learning", "NLP Basics", "Big Data Tools", "Model Deployment"],
                 "learning_path": "Statistics & Probability → Python Programming → Data Analysis → Machine Learning → Deep Learning → Real-world Projects → Kaggle Competitions",
             },
             {
                 "title": "Product Manager",
                 "match_percentage": 78,
                 "why_suits": "Your leadership skills, communication abilities, and creative thinking make you well-suited for product management, where you'll bridge technical and business worlds.",
-                "required_skills": ["Leadership", "Communication", "Strategic Thinking", "User Research", "Analytics"],
+                "required_skills": ["Leadership", "Communication", "Strategic Thinking", "User Research", "Analytics", "Market Analysis", "Roadmapping", "Agile/Scrum", "Data-Driven Decisions", "Critical Thinking"],
                 "learning_path": "Business Fundamentals → Product Management Courses → User Experience Design → Agile/Scrum → Build a Product Portfolio → Internships → Full-time Roles",
             },
         ]
@@ -510,6 +510,10 @@ def build_career_guidance_context(request):
                             "நிரலாக்கம் (Programming)",
                             "பிரச்சனை தீர்க்கும் திறன்",
                             "கவனச்சீர்மை",
+                            "ஆல்கொரிதம் வடிவமைப்பு",
+                            "குறியாக்க பிழைத்திருத்தம்",
+                            "Version Control அடிப்படைகள்",
+                            "மென்பொருள் சோதனை",
                         ],
                         "learning_path": "பள்ளி கணிதப் பாடங்கள் → C/Python போன்ற மொழிகளில் நிரலாக்க அடிப்படைகள் → சிறிய project-கள் (calculator, game, website) → internship / part-time projects.",
                     },
@@ -522,6 +526,10 @@ def build_career_guidance_context(request):
                             "Python நிரலாக்கம்",
                             "தரவு பகுப்பாய்வு",
                             "தர்க்க சிந்தனை",
+                            "Machine Learning அடிப்படைகள்",
+                            "SQL database வினவல்கள்",
+                            "தரவு சுத்தம் செய்யும் நுட்பங்கள்",
+                            "புள்ளியியல் மாதிரி உருவாக்கம்",
                         ],
                         "learning_path": "அடிப்படை புள்ளியியல் மற்றும் probability → Python → data analysis (pandas, Excel) → சிறிய data projects → கல்லூரியில் Data Science / AI பாடநெறி.",
                     },
@@ -534,6 +542,10 @@ def build_career_guidance_context(request):
                             "நிரலாக்கம் (C#, C++, Python)",
                             "படைப்பாற்றல்",
                             "குழுப்பணி",
+                            "கேம் இயற்பியல் புரிதல்",
+                            "3D கிராபிக்ஸ் அடிப்படைகள்",
+                            "நிலை வடிவமைப்பு கொள்கைகள்",
+                            "வீரர் அனுபவ வடிவமைப்பு",
                         ],
                         "learning_path": "பள்ளி கணிதத்தை நன்றாகக் கற்றல் → game engines (Unity, Unreal) அறிதல் → சிறிய game projects → கல்லூரியில் Game Dev / Computer Science degree.",
                     },
@@ -587,6 +599,9 @@ def build_career_guidance_context(request):
                             "Logical thinking",
                             "Problem solving",
                             "Attention to detail",
+                            "Algorithm design",
+                            "Code debugging",
+                            "Version control basics",
                         ],
                         "learning_path": "School Math → Learn one programming language well → Build small projects (calculator, simple website, mini game) → Contribute to bigger projects and internships.",
                     },
@@ -599,6 +614,10 @@ def build_career_guidance_context(request):
                             "Python programming",
                             "Data analysis and visualization",
                             "Curiosity about patterns in data",
+                            "Machine learning fundamentals",
+                            "SQL database queries",
+                            "Data cleaning techniques",
+                            "Statistical modeling",
                         ],
                         "learning_path": "Learn statistics basics → Learn Python for data → Practice with small datasets and charts → Study machine learning in college or online courses.",
                     },
@@ -611,6 +630,10 @@ def build_career_guidance_context(request):
                             "Programming (C#, C++, or similar)",
                             "Creative thinking",
                             "Teamwork",
+                            "Game physics understanding",
+                            "3D graphics basics",
+                            "Level design principles",
+                            "Player experience design",
                         ],
                         "learning_path": "Strengthen school Math → Learn a language used in games (e.g. C# with Unity) → Build tiny games and experiments → Study Computer Science / Game Development after school.",
                     },
@@ -813,22 +836,28 @@ def build_career_guidance_context(request):
         
         # Categorize skills into roadmap stages based on complexity
         if unique_skills:
-            # Split skills into three stages
+            # Split skills into three stages with better distribution
+            # Ensure each stage has at least 5 skills for pagination to trigger
             n = len(unique_skills)
+            
+            # Simple split: divide into roughly equal thirds
+            # But ensure minimum of 5 skills per stage when possible
+            third = max(5, (n + 2) // 3)  # Round up division
+            
             skill_roadmap_data["beginner"] = {
                 "title": ui["roadmap_beginner"],
                 "description": ui["roadmap_beginner_desc"],
-                "skills": unique_skills[:max(1, n//3)],
+                "skills": unique_skills[:third],
             }
             skill_roadmap_data["intermediate"] = {
                 "title": ui["roadmap_intermediate"],
                 "description": ui["roadmap_intermediate_desc"],
-                "skills": unique_skills[max(1, n//3):max(2, 2*n//3)],
+                "skills": unique_skills[third:third*2],
             }
             skill_roadmap_data["advanced"] = {
                 "title": ui["roadmap_advanced"],
                 "description": ui["roadmap_advanced_desc"],
-                "skills": unique_skills[max(2, 2*n//3):],
+                "skills": unique_skills[third*2:],
             }
 
     return {

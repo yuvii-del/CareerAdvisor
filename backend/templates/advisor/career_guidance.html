@@ -85,14 +85,27 @@
                             <i data-lucide="briefcase" class="icon"></i>
                             <span>{{ ui.required_skills }}</span>
                         </div>
-                        <ul class="skills-grid" role="list">
+                        <ul class="skills-grid" role="list" id="skills-list-{{ forloop.counter }}">
                             {% for skill in career.required_skills|required_skills_list %}
-                            <li class="skill-chip">
+                            <li class="skill-chip skill-page-item" data-page="auto" style="{% if forloop.counter0 >= 5 %}display:none;{% endif %}">
                                 <span class="skill-chip__icon" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
                                 <span class="skill-chip__text">{{ skill }}</span>
                             </li>
                             {% endfor %}
                         </ul>
+                        {% if career.required_skills|required_skills_list|length > 5 %}
+                        <div class="pagination-controls" style="margin-top: 12px; display: flex; gap: 8px; align-items: center; justify-content: center;">
+                            <button type="button" class="btn btn-ghost btn-sm skills-prev-btn" data-career-idx="{{ forloop.counter }}" disabled style="padding: 10px; min-width: 24px; height: 30px;">
+                                <i data-lucide="chevron-left" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                Previous
+                            </button>
+                            <span class="page-indicator" style="font-size: 14px; color: var(--gray-600);">Page <span class="current-page-num">1</span> of <span class="total-pages">{{ career.required_skills|required_skills_list|length }}</span></span>
+                            <button type="button" class="btn btn-ghost btn-sm skills-next-btn" data-career-idx="{{ forloop.counter }}" style="padding: 10px; min-width: 24px; height: 30px;">
+                                Next
+                                <i data-lucide="chevron-right" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="detail-section detail-section--path">
@@ -209,14 +222,25 @@
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="sprout" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
                                         <h4 class="rm-card__title">{{ skill_roadmap_data.beginner.title }}</h4>
-                                        <ul class="rm-card__list">
+                                        <ul class="rm-card__list" id="beginner-skills-list">
                                             {% for skill in skill_roadmap_data.beginner.skills %}
-                                            <li>
+                                            <li class="roadmap-skill-item" data-page="auto" style="{% if forloop.counter0 >= 4 %}display:none;{% endif %};">
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
                                                 <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
+                                        {% if skill_roadmap_data.beginner.skills|length > 4 %}
+                                        <div class="roadmap-pagination" style="margin-top: 5px; display: flex; gap: 4px; align-items: center; justify-content: center;">
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-prev-btn" data-stage="beginner" disabled style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-left" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                            <span class="page-indicator" style="font-size: 12px; color: var(--gray-600);"><span class="current-page-num">1</span>/<span class="total-pages">{{ skill_roadmap_data.beginner.skills|length }}</span></span>
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-next-btn" data-stage="beginner" style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-right" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </article>
                             </div>
@@ -237,14 +261,25 @@
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="layers" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
                                         <h4 class="rm-card__title">{{ skill_roadmap_data.intermediate.title }}</h4>
-                                        <ul class="rm-card__list">
+                                        <ul class="rm-card__list" id="intermediate-skills-list">
                                             {% for skill in skill_roadmap_data.intermediate.skills %}
-                                            <li>
+                                            <li class="roadmap-skill-item" data-page="auto" style="{% if forloop.counter0 >= 4 %}display:none;{% endif %};">
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
                                                 <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
+                                        {% if skill_roadmap_data.intermediate.skills|length > 4 %}
+                                        <div class="roadmap-pagination" style="margin-top: 5px; display: flex; gap: 4px; align-items: center; justify-content: center;">
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-prev-btn" data-stage="intermediate" disabled style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-left" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                            <span class="page-indicator" style="font-size: 12px; color: var(--gray-600);"><span class="current-page-num">1</span>/<span class="total-pages">{{ skill_roadmap_data.intermediate.skills|length }}</span></span>
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-next-btn" data-stage="intermediate" style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-right" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </article>
                             </div>
@@ -257,14 +292,25 @@
                                     <div class="rm-card__icon" aria-hidden="true"><i data-lucide="rocket" class="icon rm-card__glyph"></i></div>
                                     <div class="rm-card__body">
                                         <h4 class="rm-card__title">{{ skill_roadmap_data.advanced.title }}</h4>
-                                        <ul class="rm-card__list">
+                                        <ul class="rm-card__list" id="advanced-skills-list">
                                             {% for skill in skill_roadmap_data.advanced.skills %}
-                                            <li>
+                                            <li class="roadmap-skill-item" data-page="auto" style="{% if forloop.counter0 >= 4 %}display:none;{% endif %};">
                                                 <span class="rm-card__check" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
                                                 <span class="rm-card__text">{{ skill }}</span>
                                             </li>
                                             {% endfor %}
                                         </ul>
+                                        {% if skill_roadmap_data.advanced.skills|length > 4 %}
+                                        <div class="roadmap-pagination" style="margin-top: 5px; display: flex; gap: 4px; align-items: center; justify-content: center;">
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-prev-btn" data-stage="advanced" disabled style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-left" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                            <span class="page-indicator" style="font-size: 12px; color: var(--gray-600);"><span class="current-page-num">1</span>/<span class="total-pages">{{ skill_roadmap_data.advanced.skills|length }}</span></span>
+                                            <button type="button" class="btn btn-ghost btn-sm roadmap-next-btn" data-stage="advanced" style="padding: 10px; min-width: 24px; height: 30px;">
+                                                <i data-lucide="chevron-right" class="icon" style="width: 16px; height: 16px; font-weight: bold;"></i>
+                                            </button>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </article>
                             </div>
@@ -335,6 +381,204 @@
         setTimeout(function () {
             if (root && !root.classList.contains('roadmap-flow--visible')) revealRoadmap();
         }, 2800);
+        
+        // Initialize roadmap pagination
+        initRoadmapPagination();
+        
+        // Initialize skills pagination
+        initSkillsPagination();
     });
+    
+    // Roadmap Pagination Logic
+    function initRoadmapPagination() {
+        const stages = ['beginner', 'intermediate', 'advanced'];
+        
+        stages.forEach(function(stage) {
+            const stageList = document.getElementById(`${stage}-skills-list`);
+            if (!stageList) return;
+            
+            const items = stageList.querySelectorAll('.roadmap-skill-item');
+            const totalPagesEl = stageList.parentElement.querySelector('.total-pages');
+            const prevBtns = stageList.parentElement.querySelectorAll(`.roadmap-prev-btn[data-stage="${stage}"]`);
+            const nextBtns = stageList.parentElement.querySelectorAll(`.roadmap-next-btn[data-stage="${stage}"]`);
+            
+            // Calculate page numbers for each item (4 items per page)
+            items.forEach(function(item, index) {
+                const pageNum = Math.floor(index / 4) + 1;
+                item.dataset.page = pageNum;
+            });
+            
+            // Update total pages display
+            const totalPages = Math.ceil(items.length / 4);
+            if (totalPagesEl) {
+                totalPagesEl.textContent = totalPages;
+            }
+            
+            // Hide buttons if only 1 page
+            const paginationContainer = stageList.parentElement.querySelector('.roadmap-pagination');
+            if (paginationContainer && totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+            }
+            
+            prevBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const currentPageEl = stageList.parentElement.querySelector('.current-page-num');
+                    let currentPage = parseInt(currentPageEl.textContent);
+                    
+                    // Hide current page items
+                    items.forEach(function(item) {
+                        if (parseInt(item.dataset.page) === currentPage) {
+                            item.style.display = 'none';
+                        }
+                    });
+                    
+                    // Show previous page
+                    const prevPage = currentPage - 1;
+                    items.forEach(function(item) {
+                        if (parseInt(item.dataset.page) === prevPage) {
+                            item.style.display = 'flex';
+                        }
+                    });
+                    
+                    // Update page number
+                    currentPageEl.textContent = prevPage;
+                    
+                    // Update button states
+                    btn.disabled = true;
+                    const nextBtn = stageList.parentElement.querySelector('.roadmap-next-btn[data-stage="' + stage + '"]');
+                    if (nextBtn) nextBtn.disabled = false;
+                });
+            });
+            
+            nextBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const currentPageEl = stageList.parentElement.querySelector('.current-page-num');
+                    let currentPage = parseInt(currentPageEl.textContent);
+                    const maxPage = totalPages;
+                    
+                    // Hide current page items
+                    items.forEach(function(item) {
+                        if (parseInt(item.dataset.page) === currentPage) {
+                            item.style.display = 'none';
+                        }
+                    });
+                    
+                    // Show next page
+                    const nextPage = currentPage + 1;
+                    items.forEach(function(item) {
+                        if (parseInt(item.dataset.page) === nextPage) {
+                            item.style.display = 'flex';
+                        }
+                    });
+                    
+                    // Update page number
+                    currentPageEl.textContent = nextPage;
+                    
+                    // Update button states
+                    btn.disabled = nextPage >= maxPage;
+                    const prevBtn = stageList.parentElement.querySelector('.roadmap-prev-btn[data-stage="' + stage + '"]');
+                    if (prevBtn) prevBtn.disabled = false;
+                });
+            });
+        });
+    }
+    
+    // Skills Pagination Logic
+    function initSkillsPagination() {
+        const careerIndices = document.querySelectorAll('[id^="skills-list-"]');
+        
+        careerIndices.forEach(function(listContainer) {
+            const careerIdx = listContainer.id.replace('skills-list-', '');
+            const prevBtn = document.querySelector(`.skills-prev-btn[data-career-idx="${careerIdx}"]`);
+            const nextBtn = document.querySelector(`.skills-next-btn[data-career-idx="${careerIdx}"]`);
+            
+            if (!prevBtn || !nextBtn) return;
+            
+            // Calculate and set page numbers for items (5 items per page)
+            const items = listContainer.querySelectorAll('.skill-page-item');
+            const totalPagesEl = listContainer.parentElement.querySelector('.total-pages');
+            
+            items.forEach(function(item, index) {
+                const pageNum = Math.floor(index / 5) + 1;
+                item.dataset.page = pageNum;
+            });
+            
+            // Update total pages display
+            const totalPages = Math.ceil(items.length / 5);
+            if (totalPagesEl) {
+                totalPagesEl.textContent = totalPages;
+            }
+            
+            // Hide pagination if only 1 page
+            const paginationContainer = listContainer.parentElement.querySelector('.pagination-controls');
+            if (paginationContainer && totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+            }
+            
+            prevBtn.addEventListener('click', function() {
+                const skillsList = document.getElementById(`skills-list-${careerIdx}`);
+                if (!skillsList) return;
+                
+                const pageIndicator = skillsList.parentElement.querySelector('.current-page-num');
+                const skillItems = skillsList.querySelectorAll('.skill-page-item');
+                let currentPage = parseInt(pageIndicator.textContent);
+                
+                // Hide current page items
+                skillItems.forEach(function(item) {
+                    if (parseInt(item.dataset.page) === currentPage) {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Show previous page
+                const prevPage = currentPage - 1;
+                skillItems.forEach(function(item) {
+                    if (parseInt(item.dataset.page) === prevPage) {
+                        item.style.display = 'flex';
+                    }
+                });
+                
+                // Update page number
+                pageIndicator.textContent = prevPage;
+                
+                // Update button states
+                prevBtn.disabled = true;
+                if (currentPage < totalPages) {
+                    nextBtn.disabled = false;
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                const skillsList = document.getElementById(`skills-list-${careerIdx}`);
+                if (!skillsList) return;
+                
+                const pageIndicator = skillsList.parentElement.querySelector('.current-page-num');
+                const skillItems = skillsList.querySelectorAll('.skill-page-item');
+                let currentPage = parseInt(pageIndicator.textContent);
+                
+                // Hide current page items
+                skillItems.forEach(function(item) {
+                    if (parseInt(item.dataset.page) === currentPage) {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Show next page
+                const nextPage = currentPage + 1;
+                skillItems.forEach(function(item) {
+                    if (parseInt(item.dataset.page) === nextPage) {
+                        item.style.display = 'flex';
+                    }
+                });
+                
+                // Update page number
+                pageIndicator.textContent = nextPage;
+                
+                // Update button states
+                prevBtn.disabled = false;
+                nextBtn.disabled = nextPage >= totalPages;
+            });
+        });
+    }
 </script>
 {% endblock %}

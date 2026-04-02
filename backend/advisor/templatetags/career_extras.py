@@ -54,3 +54,36 @@ def learning_path_steps(value):
             return dash_parts
 
     return [s]
+
+
+@register.filter
+def paginate_list(value, page_size):
+    """
+    Paginate a list into chunks of page_size.
+    Returns a list of dicts with 'items' and 'page_num' for each page.
+    Usage: {{ mylist|paginate_list:4 }}
+    """
+    if not value:
+        return []
+    
+    if not isinstance(value, (list, tuple)):
+        return [{"items": [value], "page_num": 1}]
+    
+    try:
+        page_size = int(page_size)
+        if page_size < 1:
+            page_size = 4
+    except (ValueError, TypeError):
+        page_size = 4
+    
+    pages = []
+    for i in range(0, len(value), page_size):
+        chunk = value[i:i + page_size]
+        pages.append({
+            "items": chunk,
+            "page_num": (i // page_size) + 1,
+            "is_first": i == 0,
+            "is_last": i + page_size >= len(value),
+        })
+    
+    return pages
